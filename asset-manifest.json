@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/gerenciador-volei/static/css/main.e6c13ad2.css",
-    "main.js": "/gerenciador-volei/static/js/main.411f5c83.js",
+    "main.js": "/gerenciador-volei/static/js/main.d4f88c2e.js",
     "index.html": "/gerenciador-volei/index.html",
     "main.e6c13ad2.css.map": "/gerenciador-volei/static/css/main.e6c13ad2.css.map",
-    "main.411f5c83.js.map": "/gerenciador-volei/static/js/main.411f5c83.js.map"
+    "main.d4f88c2e.js.map": "/gerenciador-volei/static/js/main.d4f88c2e.js.map"
   },
   "entrypoints": [
     "static/css/main.e6c13ad2.css",
-    "static/js/main.411f5c83.js"
+    "static/js/main.d4f88c2e.js"
   ]
 }
