@@ -3,12 +3,14 @@ import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "SUA_API_KEY",
-  authDomain: "SEU_AUTH_DOMAIN",
-  projectId: "SEU_PROJECT_ID",
-  storageBucket: "SEU_STORAGE_BUCKET",
-  messagingSenderId: "SEU_MESSAGING_SENDER_ID",
-  appId: "SEU_APP_ID",
+  apiKey: "AIzaSyADb6Dw5wZJHAdi3_SDaeNz9WYTu7xwMIg",
+  authDomain: "systemr-4877c.firebaseapp.com",
+  databaseURL: "https://systemr-4877c-default-rtdb.firebaseio.com",
+  projectId: "systemr-4877c",
+  storageBucket: "systemr-4877c.firebasestorage.app",
+  messagingSenderId: "76346580988",
+  appId: "1:76346580988:web:af6b718a9c8c8124cedc79",
+  measurementId: "G-F25DGCQKBJ"
 };
 
 const app = initializeApp(firebaseConfig);
