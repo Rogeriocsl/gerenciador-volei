@@ -3,7 +3,7 @@ import { db } from "../firebase";
 import { collection, getDocs } from "firebase/firestore";
 
 const Home = () => {
-  
+
   const [data, setData] = useState([]);
 
   useEffect(() => {
@@ -26,7 +26,7 @@ const Home = () => {
   return (
     <div style={{ padding: "20px" }}>
       <h1>Bem-vindo ao Gerenciador de Vôlei</h1>
-      <p>Testando integração com Firebase:</p>
+      <p>Testando integração com Firebase: e teste</p>
       {data.length === 0 ? (
         <p>Nenhum dado encontrado.</p>
       ) : (
