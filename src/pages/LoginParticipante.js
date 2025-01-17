@@ -8,7 +8,7 @@ import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 // Adiciona o link para a fonte Roboto no arquivo HTML (index.html)
 import "@fontsource/roboto";  // Instalar e importar Roboto
 
-const Home = () => {
+const LoginParticipante = () => {
   return (
     <Box
       sx={{
@@ -52,7 +52,7 @@ const Home = () => {
             marginBottom: 20, // Espaçamento entre a imagem e o título
           }}
         />
-        
+
         {/* Título com a fonte Roboto e tamanho 20px */}
         <Typography
           variant="h4"
@@ -63,7 +63,7 @@ const Home = () => {
         >
           Bem-vindo ao Gerenciador de Vôlei
         </Typography>
-        
+
         {/* Campo de Matrícula */}
         <TextField
           label="Matrícula"
@@ -77,7 +77,7 @@ const Home = () => {
             borderRadius: 2,
           }}
         />
-        
+
         {/* Botão de ação */}
         <Link to="/home-participante" style={{ textDecoration: "none" }}>
           <IconButton
@@ -93,9 +93,23 @@ const Home = () => {
             <ArrowForwardIcon />
           </IconButton>
         </Link>
+
+        <Link to="/login-administrativo">
+          <Typography
+            variant="h6"
+            sx={{
+              fontFamily: "'Roboto', sans-serif", // Aplica a fonte Roboto
+              fontSize: 14, // Define o tamanho da fonte para 20px
+            }}
+          >
+            Login Administrativo
+          </Typography>
+        </Link>
       </Box>
+
+
     </Box>
   );
 };
 
-export default Home;
+export default LoginParticipante;
