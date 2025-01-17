@@ -1,13 +1,12 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { TextField, Button, Typography, Box } from "@mui/material";
-import backgroundImage from '../assets/background.png';
+import backgroundImage from "../assets/background.png";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
-import bolaImage from '../assets/bola.png';
+import bolaImage from "../assets/bola.png";
 
-// Adiciona o link para a fonte Roboto no arquivo HTML (index.html)
-import "@fontsource/roboto"; // Instalar e importar Roboto
+import "@fontsource/roboto"; // Fonte Roboto
 
 const LoginAdmin = () => {
   const [email, setEmail] = useState("");
@@ -18,7 +17,7 @@ const LoginAdmin = () => {
     e.preventDefault();
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      alert("Login realizado com sucesso!");
+      navigate("/home-administrativo"); // Redireciona para a página HomeAdmin
     } catch (error) {
       alert("Erro ao fazer login: " + error.message);
     }
@@ -27,84 +26,89 @@ const LoginAdmin = () => {
   return (
     <Box
       sx={{
-        height: "100vh", // Garante que ocupe toda a altura da janela
+        height: "100vh",
         display: "flex",
-        flexDirection: "row", // Coloca as colunas lado a lado
+        flexDirection: { xs: "column", md: "row" },
       }}
     >
       {/* Coluna da esquerda com a imagem de fundo */}
       <Box
         sx={{
-          width: "70%", // Metade da tela
+          flex: 1,
           backgroundImage: `url(${backgroundImage})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
+          height: { xs: "40vh", md: "100vh" },
         }}
       />
 
       {/* Coluna da direita com o conteúdo */}
       <Box
         sx={{
-          width: "30%", // 30% da largura da tela para o conteúdo
+          flex: 1,
           display: "flex",
           flexDirection: "column",
-          justifyContent: "space-evenly", // Distribui igualmente os itens
+          justifyContent: "center",
           alignItems: "center",
-          textAlign: "center",
-          backgroundColor: "#f5f5f5", // Cor de fundo para a parte direita
-          padding: 3,
+          padding: { xs: 3, md: 5 },
+          backgroundColor: "#f5f5f5",
         }}
       >
-        <img
-          src={bolaImage} // Substitua com o caminho da sua imagem
-          alt="Logo"
-          style={{
-            width: 250,
-            height: 250,
-            borderRadius: "50%", // Para tornar a imagem redonda
-            marginBottom: 20, // Espaçamento entre a imagem e o título
-          }}
-        />
-
-        <Typography variant="h5" sx={{ marginBottom: 2 }}>
-          Login Admin
-        </Typography>
-        <form onSubmit={handleLogin} style={{ width: "100%" }}>
-          <TextField
-            label="Email"
-            type="email"
-            placeholder="email@email.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            fullWidth
-            required
-            sx={{ marginBottom: 2 }}
+        <Box sx={{ textAlign: "center", maxWidth: 400, width: "100%" }}>
+          <img
+            src={bolaImage}
+            alt="Logo"
+            style={{
+              width: "100%",
+              maxWidth: 200,
+              borderRadius: "50%",
+              marginBottom: 20,
+            }}
           />
-          <TextField
-            label="Senha"
-            type="password"
-            placeholder="********"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+          <Typography variant="h5" sx={{ marginBottom: 3 }}>
+            Login Admin
+          </Typography>
+          <form onSubmit={handleLogin}>
+            <TextField
+              label="Email"
+              type="email"
+              placeholder="email@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              fullWidth
+              required
+              sx={{ marginBottom: 2 }}
+            />
+            <TextField
+              label="Senha"
+              type="password"
+              placeholder="********"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              fullWidth
+              required
+              sx={{ marginBottom: 3 }}
+            />
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              fullWidth
+              sx={{ marginBottom: 2 }}
+            >
+              Entrar
+            </Button>
+          </form>
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={() => navigate("/")}
             fullWidth
-            required
-            sx={{ marginBottom: 2 }}
-          />
-          <Button type="submit" variant="contained" color="primary" fullWidth>
-            Entrar
+          >
+            Voltar para Login Participante
           </Button>
-        </form>
-
-        {/* Botão Voltar */}
-        <Button
-          variant="outlined"
-          color="secondary"
-          onClick={() => navigate("/")} // Redireciona para a página de login participante
-          sx={{ marginTop: 2 }}
-        >
-          Voltar para Login Participante
-        </Button>
+        </Box>
       </Box>
     </Box>
   );

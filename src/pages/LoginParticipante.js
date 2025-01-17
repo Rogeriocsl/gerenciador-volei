@@ -1,64 +1,64 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Box, TextField, IconButton, Typography } from "@mui/material";
-import backgroundImage from '../assets/background.png';
-import bolaImage from '../assets/bola.png';
+import backgroundImage from "../assets/background.png";
+import bolaImage from "../assets/bola.png";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 
-// Adiciona o link para a fonte Roboto no arquivo HTML (index.html)
-import "@fontsource/roboto";  // Instalar e importar Roboto
+import "@fontsource/roboto"; // Fonte Roboto
 
 const LoginParticipante = () => {
   return (
     <Box
       sx={{
-        height: "100vh", // Garante que ocupe toda a altura da janela
+        height: "100vh",
         display: "flex",
-        flexDirection: "row", // Coloca as colunas lado a lado
+        flexDirection: { xs: "column", md: "row" }, // Colunas lado a lado em telas maiores
       }}
     >
       {/* Coluna da esquerda com a imagem de fundo */}
       <Box
         sx={{
-          width: "70%", // Metade da tela
+          flex: 1,
           backgroundImage: `url(${backgroundImage})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
+          height: { xs: "40vh", md: "100vh" }, // Ajuste para telas pequenas
         }}
       />
 
       {/* Coluna da direita com o conteúdo */}
       <Box
         sx={{
-          width: "30%", // 30% da largura da tela para o conteúdo
+          flex: 1,
           display: "flex",
           flexDirection: "column",
-          justifyContent: "space-evenly", // Distribui igualmente os itens
+          justifyContent: "center",
           alignItems: "center",
-          textAlign: "center",
-          backgroundColor: "#f5f5f5", // Cor de fundo para a parte direita
-          padding: 3,
+          padding: { xs: 3, md: 5 },
+          backgroundColor: "#f5f5f5",
         }}
       >
-        {/* Foto acima do título */}
+        {/* Imagem redonda acima do título */}
         <img
-          src={bolaImage} // Substitua com o caminho da sua imagem
+          src={bolaImage}
           alt="Logo"
           style={{
-            width: 250,
-            height: 250,
-            borderRadius: "50%",  // Para tornar a imagem redonda
-            marginBottom: 20, // Espaçamento entre a imagem e o título
+            width: "100%",
+            maxWidth: 200,
+            borderRadius: "50%",
+            marginBottom: 20,
           }}
         />
 
-        {/* Título com a fonte Roboto e tamanho 20px */}
+        {/* Título */}
         <Typography
           variant="h4"
           sx={{
-            fontFamily: "'Roboto', sans-serif", // Aplica a fonte Roboto
-            fontSize: 20, // Define o tamanho da fonte para 20px
+            fontFamily: "'Roboto', sans-serif",
+            fontSize: { xs: 18, md: 24 }, // Ajusta o tamanho da fonte
+            marginBottom: 2,
           }}
         >
           Bem-vindo ao Gerenciador de Vôlei
@@ -72,9 +72,10 @@ const LoginParticipante = () => {
           fullWidth
           sx={{
             maxWidth: 300,
-            backgroundColor: "#fff", // Cor de fundo do input
-            color: "#000", // Cor do texto
+            backgroundColor: "#fff",
+            color: "#000",
             borderRadius: 2,
+            marginBottom: 3,
           }}
         />
 
@@ -88,26 +89,30 @@ const LoginParticipante = () => {
               color: "#fff",
               backgroundColor: "#000",
               borderRadius: "50%",
+              marginBottom: 2,
+              "&:hover": {
+                backgroundColor: "#444", // Efeito de hover
+              },
             }}
           >
             <ArrowForwardIcon />
           </IconButton>
         </Link>
 
-        <Link to="/login-administrativo">
+        {/* Link para Login Administrativo */}
+        <Link to="/login-administrativo" style={{ textDecoration: "none" }}>
           <Typography
             variant="h6"
             sx={{
-              fontFamily: "'Roboto', sans-serif", // Aplica a fonte Roboto
-              fontSize: 14, // Define o tamanho da fonte para 20px
+              fontFamily: "'Roboto', sans-serif",
+              fontSize: { xs: 14, md: 16 },
+              color: "#000",
             }}
           >
             Login Administrativo
           </Typography>
         </Link>
       </Box>
-
-
     </Box>
   );
 };
