@@ -74,6 +74,7 @@ const LoginAdmin = () => {
           <TextField
             label="Email"
             type="email"
+            placeholder="email@email.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             fullWidth
@@ -83,6 +84,7 @@ const LoginAdmin = () => {
           <TextField
             label="Senha"
             type="password"
+            placeholder="********"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             fullWidth
