@@ -98,7 +98,7 @@ const LoginAdmin = () => {
         <Button
           variant="outlined"
           color="secondary"
-          onClick={() => navigate("/login-participante")} // Redireciona para a página de login participante
+          onClick={() => navigate("/")} // Redireciona para a página de login participante
           sx={{ marginTop: 2 }}
         >
           Voltar para Login Participante
