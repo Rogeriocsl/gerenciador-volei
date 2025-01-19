@@ -65,6 +65,14 @@ const RegistrarParticipante = () => {
             setSnackbarMessage("Participante registrado com sucesso!");
             setSnackbarSeverity("success");
             setOpenSnackbar(true);
+
+            // Limpar os campos do formulário após salvar
+            setNome("");
+            setContato("");
+            setDataNascimento(getCurrentDate()); // Definindo a data atual
+            setNomeResponsavel("");
+            setContatoResponsavel("");
+
             navigate("/registrar-participante");
         } catch (error) {
             console.error("Erro ao salvar participante:", error);
@@ -73,6 +81,7 @@ const RegistrarParticipante = () => {
             setOpenSnackbar(true);
         }
     };
+
 
     // Função para formatar a data atual para o formato yyyy-mm-dd
     const getCurrentDate = () => {
@@ -139,87 +148,95 @@ const RegistrarParticipante = () => {
             <Box
                 sx={{
                     display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    backgroundColor: "rgba(255, 255, 255, 0.9)", // Fundo semitransparente para o formulário
-                    borderRadius: 3,
-                    padding: 4,
-                    width: "100%",
-                    maxWidth: 500, // Máxima largura do formulário
-                    marginTop: 5, // Distância do título
-                    marginBottom: 3,
-                    boxSizing: "border-box",
+                    justifyContent: "center", // Centraliza horizontalmente
+                    alignItems: "center", // Centraliza verticalmente
+                    height: "100%", // Preenche toda a altura disponível
                 }}
             >
-                <TextField
-                    label="Nome do Participante"
-                    variant="outlined"
-                    value={nome}
-                    onChange={(e) => setNome(e.target.value)}
-                    fullWidth
+                <Box
                     sx={{
-                        marginBottom: 2,
-                    }}
-                />
-                <TextField
-                    label="Contato"
-                    variant="outlined"
-                    value={contato}
-                    onChange={(e) => setContato(e.target.value)}
-                    fullWidth
-                    sx={{
-                        marginBottom: 2,
-                    }}
-                />
-                <TextField
-                label="Data de Nascimento"
-                variant="outlined"
-                type="date"
-                value={dataNascimento} // Sempre terá a data corrente
-                onChange={(e) => setDataNascimento(e.target.value)} // Atualiza o estado ao alterar a data
-                fullWidth
-                sx={{
-                    marginBottom: 2,
-                }}
-            />
-
-
-
-                <TextField
-                    label="Nome do Responsável"
-                    variant="outlined"
-                    value={nomeResponsavel}
-                    onChange={(e) => setNomeResponsavel(e.target.value)}
-                    fullWidth
-                    sx={{
-                        marginBottom: 2,
-                    }}
-                />
-                <TextField
-                    label="Contato do Responsável"
-                    variant="outlined"
-                    value={contatoResponsavel}
-                    onChange={(e) => setContatoResponsavel(e.target.value)}
-                    fullWidth
-                    sx={{
-                        marginBottom: 4,
-                    }}
-                />
-
-                {/* Botão de Salvar */}
-                <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={handleSubmit}
-                    sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        backgroundColor: "rgba(255, 255, 255, 0.9)", // Fundo semitransparente para o formulário
+                        borderRadius: 3,
+                        padding: 4,
                         width: "100%",
-                        padding: 2,
+                        maxWidth: 500, // Máxima largura do formulário
+                        boxSizing: "border-box",
+                        boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)", // Sombra para destacar o formulário
                     }}
                 >
-                    Salvar Participante
-                </Button>
+                    <TextField
+                        label="Nome do Participante"
+                        variant="outlined"
+                        value={nome}
+                        onChange={(e) => setNome(e.target.value)}
+                        fullWidth
+                        sx={{
+                            marginBottom: 2,
+                        }}
+                    />
+                    <TextField
+                        type="number"
+                        label="Contato"
+                        variant="outlined"
+                        value={contato}
+                        onChange={(e) => setContato(e.target.value)}
+                        fullWidth
+                        sx={{
+                            marginBottom: 2,
+                        }}
+                    />
+                    <TextField
+                        label="Data de Nascimento"
+                        variant="outlined"
+                        type="date"
+                        value={dataNascimento} // Sempre terá a data corrente
+                        onChange={(e) => setDataNascimento(e.target.value)} // Atualiza o estado ao alterar a data
+                        fullWidth
+                        sx={{
+                            marginBottom: 2,
+                        }}
+                    />
+                    <TextField
+                        label="Nome do Responsável"
+                        variant="outlined"
+                        value={nomeResponsavel}
+                        onChange={(e) => setNomeResponsavel(e.target.value)}
+                        fullWidth
+                        sx={{
+                            marginBottom: 2,
+                        }}
+                    />
+                    <TextField
+                        type="number"
+                        label="Contato do Responsável"
+                        variant="outlined"
+                        value={contatoResponsavel}
+                        onChange={(e) => setContatoResponsavel(e.target.value)}
+                        fullWidth
+                        sx={{
+                            marginBottom: 4,
+                        }}
+                    />
+
+                    {/* Botão de Salvar */}
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleSubmit}
+                        sx={{
+                            width: "100%",
+                            padding: 2,
+                        }}
+                    >
+                        Salvar Participante
+                    </Button>
+                </Box>
             </Box>
+
 
             {/* Snackbar para exibir mensagens de sucesso ou erro */}
             <Snackbar
