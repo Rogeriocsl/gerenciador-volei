@@ -13,30 +13,30 @@ const LoginParticipante = () => {
       sx={{
         height: "100vh",
         display: "flex",
-        flexDirection: { xs: "column", md: "row" }, // Colunas lado a lado em telas maiores
+        flexDirection: { xs: "column", md: "row" }, // Coluna única em telas menores, lado a lado em maiores
       }}
     >
       {/* Coluna da esquerda com a imagem de fundo */}
       <Box
         sx={{
-          flex: 1,
+          width: { xs: "100%", md: "70%" }, // 100% da largura em celulares, 70% em desktops
           backgroundImage: `url(${backgroundImage})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
-          height: { xs: "40vh", md: "100vh" }, // Ajuste para telas pequenas
+          height: { xs: "40vh", md: "100vh" }, // Altura menor para celulares
         }}
       />
 
       {/* Coluna da direita com o conteúdo */}
       <Box
         sx={{
-          flex: 1,
+          width: { xs: "100%", md: "30%" }, // 100% em celulares, 30% em desktops
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
-          padding: { xs: 3, md: 5 },
+          padding: { xs: 2, md: 5 },
           backgroundColor: "#f5f5f5",
         }}
       >
@@ -46,7 +46,8 @@ const LoginParticipante = () => {
           alt="Logo"
           style={{
             width: "100%",
-            maxWidth: 200,
+            maxWidth: 150, // Largura menor para celulares
+            height: "auto",
             borderRadius: "50%",
             marginBottom: 20,
           }}
@@ -57,7 +58,7 @@ const LoginParticipante = () => {
           variant="h4"
           sx={{
             fontFamily: "'Roboto', sans-serif",
-            fontSize: { xs: 18, md: 24 }, // Ajusta o tamanho da fonte
+            fontSize: { xs: 18, md: 24 }, // Fonte ajustada para diferentes tamanhos de tela
             marginBottom: 2,
           }}
         >
@@ -73,7 +74,6 @@ const LoginParticipante = () => {
           sx={{
             maxWidth: 300,
             backgroundColor: "#fff",
-            color: "#000",
             borderRadius: 2,
             marginBottom: 3,
           }}
@@ -91,7 +91,7 @@ const LoginParticipante = () => {
               borderRadius: "50%",
               marginBottom: 2,
               "&:hover": {
-                backgroundColor: "#444", // Efeito de hover
+                backgroundColor: "#444",
               },
             }}
           >
@@ -105,7 +105,7 @@ const LoginParticipante = () => {
             variant="h6"
             sx={{
               fontFamily: "'Roboto', sans-serif",
-              fontSize: { xs: 14, md: 16 },
+              fontSize: { xs: 14, md: 16 }, // Fonte ajustada para responsividade
               color: "#000",
             }}
           >
