@@ -67,6 +67,8 @@ const RegistrarParticipante = () => {
                 backgroundPosition: "center",
                 backgroundRepeat: "no-repeat",
                 padding: 2,
+                justifyContent: "center", // Centraliza verticalmente
+                alignItems: "center", // Centraliza horizontalmente
             }}
         >
             {/* Botão de Voltar no canto superior esquerdo */}
@@ -91,12 +93,12 @@ const RegistrarParticipante = () => {
                 sx={{
                     textAlign: "center",
                     color: "white",
-                    fontFamily: "Roboto, sans-serif", // Usando a fonte Roboto
-                    fontWeight: 700, // Peso da fonte para torná-la mais impactante
+                    fontFamily: "Roboto, sans-serif",
+                    fontWeight: 700,
                     marginBottom: 4,
-                    marginTop: 6, // Distância do topo ajustada
+                    marginTop: 6,
                     fontSize: { xs: "2rem", sm: "3rem", md: "4rem" }, // Fontes responsivas
-                    textShadow: "2px 2px 8px rgba(0, 0, 0, 0.4)", // Adicionando sombra no texto para efeito visual
+                    textShadow: "2px 2px 8px rgba(0, 0, 0, 0.4)",
                 }}
             >
                 Registrar Participante
@@ -109,12 +111,12 @@ const RegistrarParticipante = () => {
                     flexDirection: "column",
                     justifyContent: "center",
                     alignItems: "center",
-                    backgroundColor: "rgba(255, 255, 255, 0.9)", // Fundo semitransparente para o formulário
+                    backgroundColor: "rgba(255, 255, 255, 0.9)", // Fundo semitransparente
                     borderRadius: 3,
                     padding: 4,
                     width: "100%",
                     maxWidth: 500, // Máxima largura do formulário
-                    marginTop: 5, // Distância do título
+                    marginTop: 5,
                     marginBottom: 3,
                     boxSizing: "border-box",
                 }}
