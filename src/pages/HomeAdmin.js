@@ -97,7 +97,7 @@ const HomeAdmin = () => {
             sx={{
               width: 200,
               height: 200,
-              fontSize: "1.1rem",
+              fontSize: "1rem",
               borderRadius: 3,
               textTransform: "none",
               backgroundColor: "#1976d2", // Tom esportivo
