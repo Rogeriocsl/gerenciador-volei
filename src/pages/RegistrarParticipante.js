@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, Button, TextField, Typography } from "@mui/material";
+import { Box, Button, TextField, Typography, Snackbar } from "@mui/material";
 import backgroundImage from "../assets/background.png";
 import { ArrowBack } from "@mui/icons-material"; // Ícone de seta para voltar
 import { database } from "../firebase"; // Acesso ao banco Firebase (Realtime Database)
@@ -17,6 +17,11 @@ const RegistrarParticipante = () => {
     const [nomeResponsavel, setNomeResponsavel] = useState("");
     const [contatoResponsavel, setContatoResponsavel] = useState("");
 
+    // Snackbar
+    const [openSnackbar, setOpenSnackbar] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
+    const [snackbarSeverity, setSnackbarSeverity] = useState("success"); // 'error' ou 'success'
+
     // Função para gerar um número de matrícula único de 8 dígitos
     const generateMatricula = () => {
         return Math.floor(10000000 + Math.random() * 90000000); // Gera um número de 8 dígitos
@@ -24,6 +29,14 @@ const RegistrarParticipante = () => {
 
     // Função para salvar o participante no Firebase (Realtime Database)
     const handleSubmit = async () => {
+        // Verifica se todos os campos estão preenchidos
+        if (!nome || !contato || !dataNascimento || !nomeResponsavel || !contatoResponsavel) {
+            setSnackbarMessage("Por favor, preencha todos os campos!");
+            setSnackbarSeverity("error");
+            setOpenSnackbar(true);
+            return; // Não faz nada se algum campo estiver vazio
+        }
+
         try {
             const matricula = generateMatricula();
             const dataCriacao = new Date();
@@ -48,13 +61,33 @@ const RegistrarParticipante = () => {
                 dataCriacao, // Data de criação para referência das contribuições
             });
 
-            alert("Participante registrado com sucesso!");
-            navigate("/registrar-participante"); // Redireciona para a tela home-admin
+            // Sucesso ao registrar
+            setSnackbarMessage("Participante registrado com sucesso!");
+            setSnackbarSeverity("success");
+            setOpenSnackbar(true);
+            navigate("/registrar-participante");
         } catch (error) {
             console.error("Erro ao salvar participante:", error);
-            alert("Erro ao registrar participante.");
+            setSnackbarMessage("Erro ao registrar participante.");
+            setSnackbarSeverity("error");
+            setOpenSnackbar(true);
         }
     };
+
+    // Função para formatar a data atual para o formato yyyy-mm-dd
+    const getCurrentDate = () => {
+        const today = new Date();
+        const day = String(today.getDate()).padStart(2, '0');
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const year = today.getFullYear();
+
+        return `${year}-${month}-${day}`; // Retorna no formato yyyy-mm-dd
+    };
+
+    // Usando useEffect para definir a data corrente ao carregar o componente
+    useEffect(() => {
+        setDataNascimento(getCurrentDate());
+    }, []);
 
     return (
         <Box
@@ -67,8 +100,6 @@ const RegistrarParticipante = () => {
                 backgroundPosition: "center",
                 backgroundRepeat: "no-repeat",
                 padding: 2,
-                justifyContent: "center", // Centraliza verticalmente
-                alignItems: "center", // Centraliza horizontalmente
             }}
         >
             {/* Botão de Voltar no canto superior esquerdo */}
@@ -79,7 +110,7 @@ const RegistrarParticipante = () => {
                     top: 16,
                     left: 16,
                     backgroundColor: "#1976d2",
-                    '&:hover': {
+                    "&:hover": {
                         backgroundColor: "#1565c0",
                     },
                 }}
@@ -93,12 +124,12 @@ const RegistrarParticipante = () => {
                 sx={{
                     textAlign: "center",
                     color: "white",
-                    fontFamily: "Roboto, sans-serif",
-                    fontWeight: 700,
+                    fontFamily: "Roboto, sans-serif", // Usando a fonte Roboto
+                    fontWeight: 700, // Peso da fonte para torná-la mais impactante
                     marginBottom: 4,
-                    marginTop: 6,
+                    marginTop: 6, // Distância do topo ajustada
                     fontSize: { xs: "2rem", sm: "3rem", md: "4rem" }, // Fontes responsivas
-                    textShadow: "2px 2px 8px rgba(0, 0, 0, 0.4)",
+                    textShadow: "2px 2px 8px rgba(0, 0, 0, 0.4)", // Adicionando sombra no texto para efeito visual
                 }}
             >
                 Registrar Participante
@@ -111,12 +142,12 @@ const RegistrarParticipante = () => {
                     flexDirection: "column",
                     justifyContent: "center",
                     alignItems: "center",
-                    backgroundColor: "rgba(255, 255, 255, 0.9)", // Fundo semitransparente
+                    backgroundColor: "rgba(255, 255, 255, 0.9)", // Fundo semitransparente para o formulário
                     borderRadius: 3,
                     padding: 4,
                     width: "100%",
                     maxWidth: 500, // Máxima largura do formulário
-                    marginTop: 5,
+                    marginTop: 5, // Distância do título
                     marginBottom: 3,
                     boxSizing: "border-box",
                 }}
@@ -142,19 +173,19 @@ const RegistrarParticipante = () => {
                     }}
                 />
                 <TextField
-                    label="Data de Nascimento"
-                    variant="outlined"
-                    type="date"
-                    value={dataNascimento}
-                    onChange={(e) => setDataNascimento(e.target.value)}
-                    fullWidth
-                    sx={{
-                        marginBottom: 2,
-                    }}
-                    InputLabelProps={{
-                        shrink: true,
-                    }}
-                />
+                label="Data de Nascimento"
+                variant="outlined"
+                type="date"
+                value={dataNascimento} // Sempre terá a data corrente
+                onChange={(e) => setDataNascimento(e.target.value)} // Atualiza o estado ao alterar a data
+                fullWidth
+                sx={{
+                    marginBottom: 2,
+                }}
+            />
+
+
+
                 <TextField
                     label="Nome do Responsável"
                     variant="outlined"
@@ -189,6 +220,16 @@ const RegistrarParticipante = () => {
                     Salvar Participante
                 </Button>
             </Box>
+
+            {/* Snackbar para exibir mensagens de sucesso ou erro */}
+            <Snackbar
+                open={openSnackbar}
+                autoHideDuration={6000}
+                onClose={() => setOpenSnackbar(false)}
+                message={snackbarMessage}
+                severity={snackbarSeverity} // Pode ser "success" ou "error"
+                anchorOrigin={{ vertical: "top", horizontal: "center" }}
+            />
         </Box>
     );
 };
