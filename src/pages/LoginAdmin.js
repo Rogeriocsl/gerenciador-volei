@@ -4,6 +4,8 @@ import { TextField, Button, Typography, Box, Snackbar, SnackbarContent, IconButt
 import CloseIcon from "@mui/icons-material/Close";
 import backgroundImage from "../assets/background.png";
 import { signInWithEmailAndPassword } from "firebase/auth";
+import { CircularProgress } from "@mui/material";
+
 import { auth } from "../firebase";
 import bolaImage from "../assets/bola.png";
 
@@ -14,6 +16,8 @@ const LoginAdmin = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(""); // Estado para armazenar a mensagem de erro
   const [openSnackbar, setOpenSnackbar] = useState(false); // Controle para mostrar a Snackbar
+  const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate(); // Para navegação
 
   const handleLogin = async (e) => {
@@ -27,6 +31,8 @@ const LoginAdmin = () => {
     }
 
     setError(""); // Limpa o erro anterior
+    setLoading(true); // Ativa o spinner
+
     try {
       await signInWithEmailAndPassword(auth, email, password);
       navigate("/home-administrativo");
@@ -58,8 +64,11 @@ const LoginAdmin = () => {
 
       setError(errorMessage);
       setOpenSnackbar(true);
+    } finally {
+      setLoading(false); // Desativa o spinner após a operação
     }
   };
+
 
   const handleCloseSnackbar = () => {
     setOpenSnackbar(false); // Fecha o Snackbar quando o usuário interagir
@@ -145,10 +154,13 @@ const LoginAdmin = () => {
               color="primary"
               fullWidth
               sx={{ marginBottom: 2 }}
+              disabled={loading} // Desativa o botão enquanto o carregamento ocorre
             >
               Entrar
             </Button>
           </form>
+          {/* Exibe o spinner enquanto a autenticação estiver em andamento */}
+          {loading && <CircularProgress size={24} sx={{ margin: 2 }} />}
           <Button
             variant="outlined"
             color="secondary"
