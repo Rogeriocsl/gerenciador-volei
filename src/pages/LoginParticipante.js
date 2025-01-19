@@ -13,31 +13,36 @@ const LoginParticipante = () => {
       sx={{
         height: "100vh",
         display: "flex",
-        flexDirection: { xs: "column", md: "row" }, // Coluna única em telas menores, lado a lado em maiores
+        flexDirection: { xs: "column", md: "row" },
+        backgroundColor: "#f5f5f5",
       }}
     >
       {/* Coluna da esquerda com a imagem de fundo */}
       <Box
         sx={{
           width: { xs: "100%", md: "70%" }, // 100% da largura em celulares, 70% em desktops
+          height: "100vh", // Ajuste para garantir que ocupe a altura total da tela
           backgroundImage: `url(${backgroundImage})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
+          backgroundSize: "cover", // Garante que a imagem cubra toda a área
+          backgroundPosition: "center", // Centraliza a imagem
           backgroundRepeat: "no-repeat",
-          height: { xs: "40vh", md: "100vh" }, // Altura menor para celulares
+          backgroundAttachment: { xs: "scroll", md: "fixed" }, // Para criar um efeito de paralaxe em telas maiores
         }}
       />
 
       {/* Coluna da direita com o conteúdo */}
       <Box
         sx={{
-          width: { xs: "100%", md: "30%" }, // 100% em celulares, 30% em desktops
+          width: { xs: "100%", md: "70%" }, // 100% da largura em celulares, 30% em desktops
+          height: "100vh", // Ajuste para garantir que ocupe a altura total da tela
+          minHeight: "auto", // Ajuste para garantir que a box tenha altura suficiente em telas pequenas
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
-          padding: { xs: 2, md: 5 },
+          padding: { xs: 3, md: 5 },
           backgroundColor: "#f5f5f5",
+          marginLeft: { xs: 0, md: "auto" }, // Remove a margem em mobile e aplica margem automática em desktop
         }}
       >
         {/* Imagem redonda acima do título */}
@@ -46,7 +51,7 @@ const LoginParticipante = () => {
           alt="Logo"
           style={{
             width: "100%",
-            maxWidth: 150, // Largura menor para celulares
+            maxWidth: 240, // Reduzido para melhor exibição em dispositivos menores
             height: "auto",
             borderRadius: "50%",
             marginBottom: 20,
@@ -58,8 +63,9 @@ const LoginParticipante = () => {
           variant="h4"
           sx={{
             fontFamily: "'Roboto', sans-serif",
-            fontSize: { xs: 18, md: 24 }, // Fonte ajustada para diferentes tamanhos de tela
+            fontSize: { xs: 18, md: 24 }, // Ajuste dinâmico para telas menores
             marginBottom: 2,
+            textAlign: "center",
           }}
         >
           Bem-vindo ao Gerenciador de Vôlei
@@ -73,6 +79,7 @@ const LoginParticipante = () => {
           fullWidth
           sx={{
             maxWidth: 300,
+            width: "100%",
             backgroundColor: "#fff",
             borderRadius: 2,
             marginBottom: 3,
@@ -105,8 +112,10 @@ const LoginParticipante = () => {
             variant="h6"
             sx={{
               fontFamily: "'Roboto', sans-serif",
-              fontSize: { xs: 14, md: 16 }, // Fonte ajustada para responsividade
+              fontSize: { xs: 14, md: 16 }, // Ajuste dinâmico da fonte
               color: "#000",
+              textAlign: "center",
+              marginTop: 2, // Adicionando um pequeno espaço acima do link
             }}
           >
             Login Administrativo
