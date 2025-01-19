@@ -64,7 +64,7 @@ const HomeAdmin = () => {
         >
           <ExitToApp sx={{ fontSize: 30 }} /> {/* Ícone de sair */}
         </Button>
-        <Typography variant="caption" sx={{ color: "white" }}>
+        <Typography variant="caption" sx={{ color: "#3c3c3c", fontWeight: "bold" }}>
           Logout
         </Typography>
       </Box>
