@@ -25,32 +25,43 @@ const ListarParticipante = () => {
 
     // Estado para armazenar a lista de participantes
     const [participantes, setParticipantes] = useState([]);
-
+    const [mensagem, setMensagem] = useState("");
     // Estado para o Snackbar
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
+    const handleVerDetalhes = (matricula) => {
+        navigate(`/detalhes-participante/${matricula}`);
+    };
+
+    // Fecha o Snackbar
+    const handleCloseSnackbar = () => setOpenSnackbar(false);
+
     // Função para buscar os participantes do banco de dados
     const fetchParticipantes = async () => {
-        const participantesRef = ref(database, "participantes");
         try {
-            const snapshot = await get(participantesRef);
+            const snapshot = await get(ref(database, "participantes"));
             if (snapshot.exists()) {
                 const data = snapshot.val();
-                const lista = Object.keys(data).map((key) => ({
-                    matricula: key,
-                    ...data[key],
-                }));
-                setParticipantes(lista);
-            } else {
-                setParticipantes([]);
+                const currentMonthYear = new Date().toISOString().slice(0, 7); // Ex: "2025-01"
+
+                const participantesComStatus = Object.entries(data).map(([matricula, participante]) => {
+                    // Verifica se há Contribuição para o mês corrente
+                    const contribuições = participante.contribuicoesMensais || {};
+                    const pagamentoFeito = !!contribuições[currentMonthYear];
+
+                    return {
+                        matricula,
+                        ...participante,
+                        pagamentoFeito, // Adiciona o status de Contribuição
+                    };
+                });
+
+                setParticipantes(participantesComStatus);
             }
         } catch (error) {
-            console.error("Erro ao buscar participantes:", error);
-            setSnackbarMessage("Erro ao carregar os participantes.");
-            setSnackbarSeverity("error");
-            setOpenSnackbar(true);
+            console.error("Erro ao carregar participantes:", error);
         }
     };
 
@@ -71,55 +82,55 @@ const ListarParticipante = () => {
         }
     };
 
-    // Função para registrar pagamento do mês corrente
+    // Função para registrar Contribuição do mês corrente
     const handleRegistrarPagamento = async (matricula) => {
-        const participanteRef = ref(database, `participantes/${matricula}/contribuiçõesMensais`);
+        const participanteRef = ref(database, `participantes/${matricula}/contribuicoesMensais`);
         try {
             const currentMonth = new Date().getMonth() + 1; // Mês atual (1-12)
             const currentYear = new Date().getFullYear(); // Ano atual
-    
+            const currentMonthYear = `${currentYear}-${String(currentMonth).padStart(2, '0')}`; // Ex: "2025-01"
+
             // Obtém os dados atuais de contribuições
             const snapshot = await get(participanteRef);
             let updatedData = {};
-    
+
             if (snapshot.exists()) {
                 const data = snapshot.val();
-    
+
                 // Atualiza ou adiciona a contribuição do mês corrente
                 updatedData = {
                     ...data,
-                    [`${currentYear}-${currentMonth}`]: { // Chave com ano e mês
+                    [currentMonthYear]: { // Chave com ano e mês
                         mes: currentMonth,
                         ano: currentYear,
-                        valor: 1, // Indica pagamento realizado
+                        valor: 1, // Indica Contribuição realizada
                     },
                 };
             } else {
                 // Se não houver contribuições, adiciona o mês corrente
                 updatedData = {
-                    [`${currentYear}-${currentMonth}`]: {
+                    [currentMonthYear]: {
                         mes: currentMonth,
                         ano: currentYear,
                         valor: 1,
                     },
                 };
             }
-    
+
             // Atualiza o banco de dados com as contribuições corrigidas
             await update(participanteRef, updatedData);
-    
-            setSnackbarMessage("Pagamento registrado com sucesso.");
+
+            setSnackbarMessage("Contribuição registrada com sucesso.");
             setSnackbarSeverity("success");
             setOpenSnackbar(true);
             fetchParticipantes();
         } catch (error) {
-            console.error("Erro ao registrar pagamento:", error);
-            setSnackbarMessage("Erro ao registrar pagamento.");
+            console.error("Erro ao registrar Contribuição:", error);
+            setSnackbarMessage("Erro ao registrar Contribuição.");
             setSnackbarSeverity("error");
             setOpenSnackbar(true);
         }
     };
-    
 
     // UseEffect para buscar os participantes ao carregar o componente
     useEffect(() => {
@@ -193,39 +204,49 @@ const ListarParticipante = () => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {participantes.map((participante) => (
-                            <TableRow key={participante.matricula}>
-                                <TableCell>{participante.matricula}</TableCell>
-                                <TableCell>{participante.nome}</TableCell>
-                                <TableCell>{participante.contato}</TableCell>
-                                <TableCell>
-                                    <IconButton
-                                        color="primary"
-                                        onClick={() => navigate(`/editar-participante/${participante.matricula}`)}
-                                    >
-                                        <Edit />
-                                    </IconButton>
-                                    <IconButton
-                                        color="secondary"
-                                        onClick={() => handleMarcarInativo(participante.matricula)}
-                                    >
-                                        <RemoveCircle />
-                                    </IconButton>
-                                    <IconButton
-                                        color="success"
-                                        onClick={() => handleRegistrarPagamento(participante.matricula)}
-                                    >
-                                        <CheckCircle />
-                                    </IconButton>
-                                    <IconButton
-                                        color="info"
-                                        onClick={() => navigate(`/detalhes-participante/${participante.matricula}`)}
-                                    >
-                                        <Visibility />
-                                    </IconButton>
-                                </TableCell>
-                            </TableRow>
-                        ))}
+                        {participantes.map((participante) => {
+                            const currentMonthYear = new Date().toISOString().slice(0, 7); // Exemplo: "2025-01"
+                            const pagamentoMesAtual = !!participante.contribuicoesMensais?.[currentMonthYear];
+
+                            return (
+                                <TableRow key={participante.matricula}>
+                                    <TableCell>{participante.matricula}</TableCell>
+                                    <TableCell>{participante.nome}</TableCell>
+                                    <TableCell>{participante.contato}</TableCell>
+                                    <TableCell>
+                                        <IconButton
+                                            color="primary"
+                                            onClick={() => navigate(`/editar-participante/${participante.matricula}`)}
+                                        >
+                                            <Edit />
+                                        </IconButton>
+
+                                        <IconButton
+                                            color="secondary"
+                                            onClick={() => handleMarcarInativo(participante.matricula)}
+                                        >
+                                            <RemoveCircle />
+                                        </IconButton>
+
+                                        <IconButton
+                                            onClick={() => handleRegistrarPagamento(participante.matricula)}
+                                            sx={{
+                                                color: pagamentoMesAtual ? "green" : "gray", // Atualize aqui
+                                            }}
+                                        >
+                                            <CheckCircle />
+                                        </IconButton>
+
+                                        <IconButton
+                                            color="info"
+                                            onClick={() => handleVerDetalhes(participante.matricula)}
+                                        >
+                                            <Visibility />
+                                        </IconButton>
+                                    </TableCell>
+                                </TableRow>
+                            );
+                        })}
                     </TableBody>
                 </Table>
             </TableContainer>
