@@ -13,6 +13,7 @@ import {
     IconButton,
     Snackbar,
     Paper,
+    Tooltip,
 } from "@mui/material";
 import backgroundImage from "../assets/background.png";
 import { ArrowBack, Edit, Visibility, CheckCircle, RemoveCircle } from "@mui/icons-material"; // Ícones de ações
@@ -185,71 +186,97 @@ const ListarParticipante = () => {
 
             {/* Tabela de participantes */}
             <TableContainer
-                component={Paper}
-                sx={{
-                    backgroundColor: "rgba(255, 255, 255, 0.9)",
-                    borderRadius: 3,
-                    padding: 2,
-                    maxWidth: "90%",
-                    margin: "auto",
-                }}
-            >
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>Matrícula</TableCell>
-                            <TableCell>Nome</TableCell>
-                            <TableCell>Contato</TableCell>
-                            <TableCell>Ações</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {participantes.map((participante) => {
-                            const currentMonthYear = new Date().toISOString().slice(0, 7); // Exemplo: "2025-01"
-                            const pagamentoMesAtual = !!participante.contribuicoesMensais?.[currentMonthYear];
+    component={Paper}
+    sx={{
+        backgroundColor: "rgba(255, 255, 255, 0.9)",
+        borderRadius: 3,
+        padding: 2,
+        maxWidth: "90%",
+        margin: "auto",
+    }}
+>
+    <Table>
+        <TableHead>
+            <TableRow>
+                <TableCell>Matrícula</TableCell>
+                <TableCell>Nome</TableCell>
+                <TableCell>Contato</TableCell>
+                <TableCell>Ações</TableCell>
+            </TableRow>
+        </TableHead>
+        <TableBody>
+            {participantes.map((participante) => {
+                const currentMonthYear = new Date().toISOString().slice(0, 7); // Exemplo: "2025-01"
+                const pagamentoMesAtual = !!participante.contribuicoesMensais?.[currentMonthYear]; // Verifica pagamento do mês corrente
 
-                            return (
-                                <TableRow key={participante.matricula}>
-                                    <TableCell>{participante.matricula}</TableCell>
-                                    <TableCell>{participante.nome}</TableCell>
-                                    <TableCell>{participante.contato}</TableCell>
-                                    <TableCell>
-                                        <IconButton
-                                            color="primary"
-                                            onClick={() => navigate(`/editar-participante/${participante.matricula}`)}
-                                        >
-                                            <Edit />
-                                        </IconButton>
+                return (
+                    <TableRow key={participante.matricula}>
+                        <TableCell>{participante.matricula}</TableCell>
+                        <TableCell>{participante.nome}</TableCell>
+                        <TableCell>{participante.contato}</TableCell>
+                        <TableCell>
+                            {/* Botão para editar participante */}
+                            <IconButton
+                                color="primary"
+                                onClick={() => navigate(`/editar-participante/${participante.matricula}`)}
+                                aria-label="Editar participante"
+                            >
+                                <Edit />
+                            </IconButton>
 
-                                        <IconButton
-                                            color="secondary"
-                                            onClick={() => handleMarcarInativo(participante.matricula)}
-                                        >
-                                            <RemoveCircle />
-                                        </IconButton>
+                            {/* Botão para marcar participante como inativo */}
+                            <IconButton
+                                color="secondary"
+                                onClick={() => handleMarcarInativo(participante.matricula)}
+                                aria-label="Marcar como inativo"
+                            >
+                                <RemoveCircle />
+                            </IconButton>
 
-                                        <IconButton
-                                            onClick={() => handleRegistrarPagamento(participante.matricula)}
-                                            sx={{
-                                                color: pagamentoMesAtual ? "green" : "gray", // Atualize aqui
-                                            }}
-                                        >
-                                            <CheckCircle />
-                                        </IconButton>
+                            {/* Botão para registrar contribuição mensal */}
+                            <Tooltip
+                                title={pagamentoMesAtual ? "Contribuição mensal já realizada." : "Registrar contribuição mensal"}
+                                arrow
+                                disableFocusListener={!pagamentoMesAtual} // Desativa no foco se habilitado
+                                disableTouchListener={!pagamentoMesAtual} // Desativa no touch se habilitado
+                            >
+                                <span>
+                                    <IconButton
+                                        onClick={() => handleRegistrarPagamento(participante.matricula)}
+                                        disabled={pagamentoMesAtual} // Desativa o botão se já houver pagamento no mês
+                                        sx={{
+                                            color: pagamentoMesAtual ? "green" : "gray", // Verde se pago, cinza se não
+                                            "&.Mui-disabled": {
+                                                color: "green", // Força a cor verde mesmo quando desativado
+                                            },
+                                        }}
+                                        aria-label={
+                                            pagamentoMesAtual
+                                                ? "Contribuição já registrada"
+                                                : "Registrar contribuição mensal"
+                                        }
+                                    >
+                                        <CheckCircle />
+                                    </IconButton>
+                                </span>
+                            </Tooltip>
 
-                                        <IconButton
-                                            color="info"
-                                            onClick={() => handleVerDetalhes(participante.matricula)}
-                                        >
-                                            <Visibility />
-                                        </IconButton>
-                                    </TableCell>
-                                </TableRow>
-                            );
-                        })}
-                    </TableBody>
-                </Table>
-            </TableContainer>
+                            {/* Botão para visualizar detalhes */}
+                            <IconButton
+                                color="info"
+                                onClick={() => handleVerDetalhes(participante.matricula)}
+                                aria-label="Visualizar detalhes"
+                            >
+                                <Visibility />
+                            </IconButton>
+                        </TableCell>
+                    </TableRow>
+                );
+            })}
+        </TableBody>
+    </Table>
+</TableContainer>
+
 
             {/* Snackbar para exibir mensagens */}
             <Snackbar
