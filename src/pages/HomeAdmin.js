@@ -93,11 +93,11 @@ const HomeAdmin = () => {
           <Button
             variant="contained"
             color="primary"
-            startIcon={<PersonAdd  sx={{ fontSize: "3rem" }}/>} // Ícone maior
+            startIcon={<PersonAdd  />} // Ícone maior
             sx={{
               width: 200,
               height: 200,
-              fontSize: "1rem",
+              fontSize: "1.1rem",
               borderRadius: 3,
               textTransform: "none",
               backgroundColor: "#1976d2", // Tom esportivo
