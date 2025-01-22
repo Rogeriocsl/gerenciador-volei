@@ -60,11 +60,27 @@ const ListarParticipante = () => {
     const handleMarcarInativo = async (matricula) => {
         const participanteRef = ref(database, `participantes/${matricula}`);
         try {
+            const snapshot = await get(participanteRef);
+            if (!snapshot.exists()) {
+                setSnackbarMessage("Participante não encontrado.");
+                setSnackbarSeverity("error");
+                setOpenSnackbar(true);
+                return;
+            }
+    
+            const participante = snapshot.val();
+            if (participante.inativo) {
+                setSnackbarMessage("Este participante já está marcado como inativo.");
+                setSnackbarSeverity("info");
+                setOpenSnackbar(true);
+                return;
+            }
+    
             await update(participanteRef, { inativo: true });
             setSnackbarMessage("Participante marcado como inativo.");
             setSnackbarSeverity("success");
             setOpenSnackbar(true);
-            fetchParticipantes();
+            await fetchParticipantes();  // Chama fetch novamente após atualizar
         } catch (error) {
             console.error("Erro ao marcar como inativo:", error);
             setSnackbarMessage("Erro ao marcar participante como inativo.");
@@ -72,6 +88,8 @@ const ListarParticipante = () => {
             setOpenSnackbar(true);
         }
     };
+    
+    
 
     const handleRegistrarPagamento = async (matricula) => {
         const participanteRef = ref(database, `participantes/${matricula}/contribuicoesMensais`);
@@ -119,8 +137,7 @@ const ListarParticipante = () => {
 
     return (
         <Box
-            sx={{
-                height: "100vh",
+            sx={{height: "100vh",
                 display: "flex",
                 flexDirection: "column",
                 backgroundImage: `url(${backgroundImage})`,
@@ -133,8 +150,7 @@ const ListarParticipante = () => {
         >
             <Button
                 onClick={() => navigate("/home-administrativo")}
-                sx={{
-                    position: "fixed",
+                sx={{position: "fixed",
                     top: { xs: 8, sm: 16 }, // Ajusta a distância do topo em telas pequenas
                     left: { xs: 8, sm: 16 }, // Ajusta a distância da lateral
                     backgroundColor: "#1976d2",
@@ -149,8 +165,7 @@ const ListarParticipante = () => {
 
             <Typography
                 variant="h4"
-                sx={{
-                    textAlign: "center",
+                sx={{textAlign: "center",
                     color: "white",
                     fontFamily: "Roboto, sans-serif",
                     fontWeight: 700,
@@ -165,222 +180,210 @@ const ListarParticipante = () => {
 
 
             <TableContainer
-    component={Paper}
-    sx={{
-        overflowX: "auto", // Habilita rolagem horizontal em telas pequenas
-        backgroundColor: "rgba(245, 247, 250, 1)",
-        borderRadius: 3,
-        maxWidth: "100%",
-        margin: "auto",
-        height: { xs: "auto", sm: "620px" }, // Ajusta altura conforme o tamanho da tela
-        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-    }}
->
-    <Box
-        sx={{
-            display: "flex",
-            flexDirection: { xs: "column", sm: "row" },
-            justifyContent: "space-between",
-            alignItems: "center",
-            position: "sticky",
-            top: 0,
-            zIndex: 2,
-            backgroundColor: "rgba(255, 255, 255, 1)",
-            padding: { xs: "8px 8px", sm: "16px" },
-            borderBottom: "1px solid #e0e0e0",
-            gap: { xs: 1, sm: 2 },
-        }}
-    >
-        <TextField
-            variant="outlined"
-            placeholder="Pesquisar por nome ou matrícula..."
-            fullWidth
-            value={searchTerm}
-            onChange={handleSearch}
-            InputProps={{
-                startAdornment: (
-                    <InputAdornment position="start">
-                        <Search />
-                    </InputAdornment>
-                ),
-            }}
-            sx={{
-                "& .MuiOutlinedInput-root": {
-                    borderRadius: "8px",
-                },
-            }}
-        />
-        <IconButton onClick={handleSort} sx={{ ml: { xs: 0, sm: 2 } }}>
-            <Sort />
-        </IconButton>
-    </Box>
+                component={Paper}
+                sx={{overflowX: "auto", // Habilita rolagem horizontal em telas pequenas
+                    backgroundColor: "rgba(245, 247, 250, 1)",
+                    borderRadius: 3,
+                    maxWidth: "100%",
+                    margin: "auto",
+                    height: { xs: "auto", sm: "620px" }, // Ajusta altura conforme o tamanho da tela
+                    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                }}
+            >
+                <Box
+                    sx={{display: "flex",
+                        flexDirection: { xs: "column", sm: "row" },
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 2,
+                        backgroundColor: "rgba(255, 255, 255, 1)",
+                        padding: { xs: "8px 8px", sm: "16px" },
+                        borderBottom: "1px solid #e0e0e0",
+                        gap: { xs: 1, sm: 2 },
+                    }}
+                >
+                    <TextField
+                        variant="outlined"
+                        placeholder="Pesquisar por nome ou matrícula..."
+                        fullWidth
+                        value={searchTerm}
+                        onChange={handleSearch}
+                        InputProps={{
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <Search />
+                                </InputAdornment>
+                            ),
+                        }}
+                        sx={{
+                            "& .MuiOutlinedInput-root": {
+                                borderRadius: "8px",
+                            },
+                        }}
+                    />
+                    <IconButton onClick={handleSort} sx={{ ml: { xs: 0, sm: 2 } }}>
+                        <Sort />
+                    </IconButton>
+                </Box>
 
-    <Table sx={{ width: "100%" }}> {/* Ajuste da largura para 100% */}
-        <TableHead>
-            <TableRow>
-                <TableCell
-                    sx={{
-                        fontWeight: "bold",
-                        backgroundColor: "#1976d2",
-                        color: "white",
-                        textAlign: "center",
-                        whiteSpace: "nowrap",
-                        fontSize: { xs: "0.7rem", sm: "1rem" },
-                        wordBreak: "break-word",
-                    }}
-                >
-                    Matrícula
-                </TableCell>
-                <TableCell
-                    sx={{
-                        fontWeight: "bold",
-                        backgroundColor: "#1976d2",
-                        color: "white",
-                        textAlign: "center",
-                        whiteSpace: "nowrap",
-                        fontSize: { xs: "0.7rem", sm: "1rem" },
-                        wordBreak: "break-word",
-                    }}
-                >
-                    Nome
-                </TableCell>
-                <TableCell
-                    sx={{
-                        fontWeight: "bold",
-                        backgroundColor: "#1976d2",
-                        color: "white",
-                        textAlign: "center",
-                        whiteSpace: "nowrap",
-                        fontSize: { xs: "0.7rem", sm: "1rem" },
-                        wordBreak: "break-word",
-                        display: { xs: "none", sm: "table-cell" }, // Esconde a coluna "Contato" em telas pequenas
-                    }}
-                >
-                    Contato
-                </TableCell>
-                <TableCell
-                    sx={{
-                        fontWeight: "bold",
-                        backgroundColor: "#1976d2",
-                        color: "white",
-                        textAlign: "center",
-                        whiteSpace: "nowrap",
-                        fontSize: { xs: "0.7rem", sm: "1rem" },
-                        wordBreak: "break-word",
-                    }}
-                >
-                    Ações
-                </TableCell>
-            </TableRow>
-        </TableHead>
-        <TableBody>
-            {participantes
-                .filter(
-                    (p) =>
-                        String(p.nome).toLowerCase().includes(searchTerm) ||
-                        String(p.matricula).toLowerCase().includes(searchTerm)
-                )
-                .map((participante) => {
-                    const currentMonthYear = new Date().toISOString().slice(0, 7);
-                    const pagamentoMesAtual = !!participante.contribuicoesMensais?.[currentMonthYear];
-
-                    return (
-                        <TableRow
-                            key={participante.matricula}
-                            sx={{
-                                "&:nth-of-type(odd)": {
-                                    backgroundColor: "#f9f9f9",
-                                },
-                                "&:hover": {
-                                    backgroundColor: "#f1f1f1",
-                                },
-                            }}
-                        >
+                <Table sx={{ width: "100%" }}> {/* Ajuste da largura para 100% */}
+                    <TableHead>
+                        <TableRow>
                             <TableCell
-                                align="center"
-                                sx={{
+                                sx={{fontWeight: "bold",
+                                    backgroundColor: "#1976d2",
+                                    color: "white",
+                                    textAlign: "center",
+                                    whiteSpace: "nowrap",
                                     fontSize: { xs: "0.7rem", sm: "1rem" },
-                                    wordBreak: "break-word",
+                                    wordBreak: "break-word"
                                 }}
                             >
-                                {participante.matricula}
+                                Matrícula
                             </TableCell>
                             <TableCell
-                                align="center"
-                                sx={{
+                                sx={{fontWeight: "bold",
+                                    backgroundColor: "#1976d2",
+                                    color: "white",
+                                    textAlign: "center",
+                                    whiteSpace: "nowrap",
                                     fontSize: { xs: "0.7rem", sm: "1rem" },
-                                    wordBreak: "break-word",
+                                    wordBreak: "break-word"
                                 }}
                             >
-                                {participante.nome}
+                                Nome
                             </TableCell>
                             <TableCell
-                                align="center"
-                                sx={{
+                                sx={{fontWeight: "bold",
+                                    backgroundColor: "#1976d2",
+                                    color: "white",
+                                    textAlign: "center",
+                                    whiteSpace: "nowrap",
                                     fontSize: { xs: "0.7rem", sm: "1rem" },
                                     wordBreak: "break-word",
-                                    display: { xs: "none", sm: "table-cell" }, // Esconde a coluna "Contato" em telas pequenas
+                                    display: { xs: "none", sm: "table-cell" }
                                 }}
                             >
-                                {participante.contato}
+                                Contato
                             </TableCell>
                             <TableCell
-                                align="center"
-                                sx={{
-                                    display: "grid",
-                                    gridTemplateColumns: "repeat(2, 1fr)",
-                                    gap: 1,
-                                    [theme => theme.breakpoints.down('sm')]: {
-                                        gridTemplateColumns: "1fr 1fr",
-                                    },
+                                sx={{fontWeight: "bold",
+                                    backgroundColor: "#1976d2",
+                                    color: "white",
+                                    textAlign: "center",
+                                    whiteSpace: "nowrap",
+                                    fontSize: { xs: "0.7rem", sm: "1rem" },
+                                    wordBreak: "break-word"
                                 }}
                             >
-                                <IconButton
-                                    color="primary"
-                                    onClick={() => navigate(`/editar-participante/${participante.matricula}`)}
-                                >
-                                    <Edit sx={{ fontSize: { xs: "1rem", sm: "1.5rem" } }} />
-                                </IconButton>
-                                <IconButton
-                                    color="secondary"
-                                    onClick={() => handleMarcarInativo(participante.matricula)}
-                                >
-                                    <RemoveCircle sx={{ fontSize: { xs: "1rem", sm: "1.5rem" } }} />
-                                </IconButton>
-                                <Tooltip
-                                    title={
-                                        pagamentoMesAtual
-                                            ? "Contribuição mensal já realizada."
-                                            : "Registrar contribuição mensal"
-                                    }
-                                    arrow
-                                >
-                                    <span>
-                                        <IconButton
-                                            onClick={() => handleRegistrarPagamento(participante.matricula)}
-                                            disabled={pagamentoMesAtual}
-                                            sx={{
-                                                color: pagamentoMesAtual ? "green" : "gray",
-                                                "&.Mui-disabled": { color: "green" },
-                                            }}
-                                        >
-                                            <CheckCircle sx={{ fontSize: { xs: "1rem", sm: "1.5rem" } }} />
-                                        </IconButton>
-                                    </span>
-                                </Tooltip>
-                                <IconButton
-                                    color="info"
-                                    onClick={() => navigate(`/detalhes-participante/${participante.matricula}`)}
-                                >
-                                    <Visibility sx={{ fontSize: { xs: "1rem", sm: "1.5rem" } }} />
-                                </IconButton>
+                                Ações
                             </TableCell>
                         </TableRow>
-                    );
-                })}
-        </TableBody>
-    </Table>
-</TableContainer>
+                    </TableHead>
+                    <TableBody>
+                        {participantes
+                            .filter(
+                                (p) =>
+                                    String(p.nome).toLowerCase().includes(searchTerm) ||
+                                    String(p.matricula).toLowerCase().includes(searchTerm)
+                            )
+                            .map((participante) => {
+                                const currentMonthYear = new Date().toISOString().slice(0, 7);
+                                const pagamentoMesAtual = !!participante.contribuicoesMensais?.[currentMonthYear];
+
+                                return (
+                                    <TableRow
+                                        key={participante.matricula}
+                                        sx={{"&:nth-of-type(odd)": {
+                                                backgroundColor: "#f9f9f9",
+                                            },
+                                            "&:hover": {
+                                                backgroundColor: "#f1f1f1",
+                                            },
+                                        }}
+                                    >
+                                        <TableCell
+                                            align="center"
+                                            sx={{fontSize: { xs: "0.7rem", sm: "1rem" },
+                                                wordBreak: "break-word",
+                                            }}
+                                        >
+                                            {participante.matricula}
+                                        </TableCell>
+                                        <TableCell
+                                            align="center"
+                                            sx={{fontSize: { xs: "0.7rem", sm: "1rem" },
+                                                wordBreak: "break-word",
+                                            }}
+                                        >
+                                            {participante.nome}
+                                        </TableCell>
+                                        <TableCell
+                                            align="center"
+                                            sx={{fontSize: { xs: "0.7rem", sm: "1rem" },
+                                                wordBreak: "break-word",
+                                                display: { xs: "none", sm: "table-cell" }, // Esconde a coluna "Contato" em telas pequenas
+                                            }}
+                                        >
+                                            {participante.contato}
+                                        </TableCell>
+                                        <TableCell
+                                            align="center"
+                                            sx={{display: "grid",
+                                                gridTemplateColumns: "repeat(2, 1fr)",
+                                                gap: 1,
+                                                [theme => theme.breakpoints.down('sm')]: {
+                                                    gridTemplateColumns: "1fr 1fr",
+                                                },
+                                            }}
+                                        >
+                                            <IconButton
+                                                color="primary"
+                                                onClick={() => navigate(`/editar-participante/${participante.matricula}`)}
+                                            >
+                                                <Edit sx={{ fontSize: { xs: "1rem", sm: "1.5rem" } }} />
+                                            </IconButton>
+                                            <IconButton
+                                                color="secondary"
+                                                onClick={() => handleMarcarInativo(participante.matricula)}
+                                            >
+                                                <RemoveCircle sx={{ fontSize: { xs: "1rem", sm: "1.5rem" } }} />
+                                            </IconButton>
+                                            <Tooltip
+                                                title={
+                                                    pagamentoMesAtual
+                                                        ? "Contribuição mensal já realizada."
+                                                        : "Registrar contribuição mensal"
+                                                }
+                                                arrow
+                                            >
+                                                <span>
+                                                    <IconButton
+                                                        onClick={() => handleRegistrarPagamento(participante.matricula)}
+                                                        disabled={pagamentoMesAtual}
+                                                        sx={{color: pagamentoMesAtual ? "green" : "gray",
+                                                            "&.Mui-disabled": { color: "green" },
+                                                        }}
+                                                    >
+                                                        <CheckCircle sx={{ fontSize: { xs: "1rem", sm: "1.5rem" } }} />
+                                                    </IconButton>
+                                                </span>
+                                            </Tooltip>
+                                            <IconButton
+                                                color="info"
+                                                onClick={() => navigate(`/detalhes-participante/${participante.matricula}`)}
+                                            >
+                                                <Visibility sx={{ fontSize: { xs: "1rem", sm: "1.5rem" } }} />
+                                            </IconButton>
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })}
+                    </TableBody>
+                </Table>
+            </TableContainer>
 
 
 
