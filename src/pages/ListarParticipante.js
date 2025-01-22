@@ -127,21 +127,22 @@ const ListarParticipante = () => {
                 backgroundSize: "cover",
                 backgroundPosition: "center",
                 backgroundRepeat: "no-repeat",
-                padding: 2,
-
+                padding: { xs: 1, sm: 2 }, // Menor padding em telas pequenas
             }}
+
         >
             <Button
                 onClick={() => navigate("/home-administrativo")}
                 sx={{
                     position: "fixed",
-                    top: 16,
-                    left: 16,
+                    top: { xs: 8, sm: 16 }, // Ajusta a distância do topo em telas pequenas
+                    left: { xs: 8, sm: 16 }, // Ajusta a distância da lateral
                     backgroundColor: "#1976d2",
                     "&:hover": {
                         backgroundColor: "#1565c0",
                     },
                 }}
+
             >
                 <ArrowBack sx={{ fontSize: 30, color: "white" }} />
             </Button>
@@ -163,130 +164,227 @@ const ListarParticipante = () => {
             </Typography>
 
 
-
             <TableContainer
-                component={Paper}
-                sx={{
-                    overflowX: "auto",
-                    backgroundColor: "rgba(255, 255, 255, 1)",
-                    borderRadius: 3,
-                    maxWidth: "100%",
-                    margin: "auto",
-                    height: "620px", // Altura fixa do contêiner
-                }}
-            >
-                {/* Campo de busca fixo */}
-                <Box
+    component={Paper}
+    sx={{
+        overflowX: "auto", // Habilita rolagem horizontal em telas pequenas
+        backgroundColor: "rgba(245, 247, 250, 1)",
+        borderRadius: 3,
+        maxWidth: "100%",
+        margin: "auto",
+        height: { xs: "auto", sm: "620px" }, // Ajusta altura conforme o tamanho da tela
+        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+    }}
+>
+    <Box
+        sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            justifyContent: "space-between",
+            alignItems: "center",
+            position: "sticky",
+            top: 0,
+            zIndex: 2,
+            backgroundColor: "rgba(255, 255, 255, 1)",
+            padding: { xs: "8px 8px", sm: "16px" },
+            borderBottom: "1px solid #e0e0e0",
+            gap: { xs: 1, sm: 2 },
+        }}
+    >
+        <TextField
+            variant="outlined"
+            placeholder="Pesquisar por nome ou matrícula..."
+            fullWidth
+            value={searchTerm}
+            onChange={handleSearch}
+            InputProps={{
+                startAdornment: (
+                    <InputAdornment position="start">
+                        <Search />
+                    </InputAdornment>
+                ),
+            }}
+            sx={{
+                "& .MuiOutlinedInput-root": {
+                    borderRadius: "8px",
+                },
+            }}
+        />
+        <IconButton onClick={handleSort} sx={{ ml: { xs: 0, sm: 2 } }}>
+            <Sort />
+        </IconButton>
+    </Box>
+
+    <Table sx={{ width: "100%" }}> {/* Ajuste da largura para 100% */}
+        <TableHead>
+            <TableRow>
+                <TableCell
                     sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        position: "sticky", // Mantém fixo no topo do contêiner
-                        top: 0, // Gruda no topo
-                        zIndex: 2, // Garante que fique acima da tabela
-                        backgroundColor: "rgba(255, 255, 255, 1)", // Fundo visível
-                        padding: "16px",
-                        borderBottom: "1px solid #ccc", // Opcional: linha para separar o cabeçalho
+                        fontWeight: "bold",
+                        backgroundColor: "#1976d2",
+                        color: "white",
+                        textAlign: "center",
+                        whiteSpace: "nowrap",
+                        fontSize: { xs: "0.7rem", sm: "1rem" },
+                        wordBreak: "break-word",
                     }}
                 >
-                    <TextField
-                        variant="outlined"
-                        placeholder="Pesquisar por nome ou matrícula..."
-                        fullWidth
-                        value={searchTerm}
-                        onChange={handleSearch}
-                        InputProps={{
-                            startAdornment: (
-                                <InputAdornment position="start">
-                                    <Search />
-                                </InputAdornment>
-                            ),
-                        }}
-                    />
-                    <IconButton onClick={handleSort} sx={{ ml: 2 }}>
-                        <Sort />
-                    </IconButton>
-                </Box>
+                    Matrícula
+                </TableCell>
+                <TableCell
+                    sx={{
+                        fontWeight: "bold",
+                        backgroundColor: "#1976d2",
+                        color: "white",
+                        textAlign: "center",
+                        whiteSpace: "nowrap",
+                        fontSize: { xs: "0.7rem", sm: "1rem" },
+                        wordBreak: "break-word",
+                    }}
+                >
+                    Nome
+                </TableCell>
+                <TableCell
+                    sx={{
+                        fontWeight: "bold",
+                        backgroundColor: "#1976d2",
+                        color: "white",
+                        textAlign: "center",
+                        whiteSpace: "nowrap",
+                        fontSize: { xs: "0.7rem", sm: "1rem" },
+                        wordBreak: "break-word",
+                        display: { xs: "none", sm: "table-cell" }, // Esconde a coluna "Contato" em telas pequenas
+                    }}
+                >
+                    Contato
+                </TableCell>
+                <TableCell
+                    sx={{
+                        fontWeight: "bold",
+                        backgroundColor: "#1976d2",
+                        color: "white",
+                        textAlign: "center",
+                        whiteSpace: "nowrap",
+                        fontSize: { xs: "0.7rem", sm: "1rem" },
+                        wordBreak: "break-word",
+                    }}
+                >
+                    Ações
+                </TableCell>
+            </TableRow>
+        </TableHead>
+        <TableBody>
+            {participantes
+                .filter(
+                    (p) =>
+                        String(p.nome).toLowerCase().includes(searchTerm) ||
+                        String(p.matricula).toLowerCase().includes(searchTerm)
+                )
+                .map((participante) => {
+                    const currentMonthYear = new Date().toISOString().slice(0, 7);
+                    const pagamentoMesAtual = !!participante.contribuicoesMensais?.[currentMonthYear];
 
-                {/* Tabela que será rolada */}
-                <Table>
-                    <TableHead>
-                        <TableRow >
-                            <TableCell>Matrícula</TableCell>
-                            <TableCell>Nome</TableCell>
-                            <TableCell>Contato</TableCell>
-                            <TableCell>Ações</TableCell>
+                    return (
+                        <TableRow
+                            key={participante.matricula}
+                            sx={{
+                                "&:nth-of-type(odd)": {
+                                    backgroundColor: "#f9f9f9",
+                                },
+                                "&:hover": {
+                                    backgroundColor: "#f1f1f1",
+                                },
+                            }}
+                        >
+                            <TableCell
+                                align="center"
+                                sx={{
+                                    fontSize: { xs: "0.7rem", sm: "1rem" },
+                                    wordBreak: "break-word",
+                                }}
+                            >
+                                {participante.matricula}
+                            </TableCell>
+                            <TableCell
+                                align="center"
+                                sx={{
+                                    fontSize: { xs: "0.7rem", sm: "1rem" },
+                                    wordBreak: "break-word",
+                                }}
+                            >
+                                {participante.nome}
+                            </TableCell>
+                            <TableCell
+                                align="center"
+                                sx={{
+                                    fontSize: { xs: "0.7rem", sm: "1rem" },
+                                    wordBreak: "break-word",
+                                    display: { xs: "none", sm: "table-cell" }, // Esconde a coluna "Contato" em telas pequenas
+                                }}
+                            >
+                                {participante.contato}
+                            </TableCell>
+                            <TableCell
+                                align="center"
+                                sx={{
+                                    display: "grid",
+                                    gridTemplateColumns: "repeat(2, 1fr)",
+                                    gap: 1,
+                                    [theme => theme.breakpoints.down('sm')]: {
+                                        gridTemplateColumns: "1fr 1fr",
+                                    },
+                                }}
+                            >
+                                <IconButton
+                                    color="primary"
+                                    onClick={() => navigate(`/editar-participante/${participante.matricula}`)}
+                                >
+                                    <Edit sx={{ fontSize: { xs: "1rem", sm: "1.5rem" } }} />
+                                </IconButton>
+                                <IconButton
+                                    color="secondary"
+                                    onClick={() => handleMarcarInativo(participante.matricula)}
+                                >
+                                    <RemoveCircle sx={{ fontSize: { xs: "1rem", sm: "1.5rem" } }} />
+                                </IconButton>
+                                <Tooltip
+                                    title={
+                                        pagamentoMesAtual
+                                            ? "Contribuição mensal já realizada."
+                                            : "Registrar contribuição mensal"
+                                    }
+                                    arrow
+                                >
+                                    <span>
+                                        <IconButton
+                                            onClick={() => handleRegistrarPagamento(participante.matricula)}
+                                            disabled={pagamentoMesAtual}
+                                            sx={{
+                                                color: pagamentoMesAtual ? "green" : "gray",
+                                                "&.Mui-disabled": { color: "green" },
+                                            }}
+                                        >
+                                            <CheckCircle sx={{ fontSize: { xs: "1rem", sm: "1.5rem" } }} />
+                                        </IconButton>
+                                    </span>
+                                </Tooltip>
+                                <IconButton
+                                    color="info"
+                                    onClick={() => navigate(`/detalhes-participante/${participante.matricula}`)}
+                                >
+                                    <Visibility sx={{ fontSize: { xs: "1rem", sm: "1.5rem" } }} />
+                                </IconButton>
+                            </TableCell>
                         </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {participantes
-                            .filter(
-                                (p) =>
-                                    String(p.nome).toLowerCase().includes(searchTerm) ||
-                                    String(p.matricula).toLowerCase().includes(searchTerm)
-                            )
-                            .map((participante) => {
-                                const currentMonthYear = new Date().toISOString().slice(0, 7);
-                                const pagamentoMesAtual = !!participante.contribuicoesMensais?.[currentMonthYear];
+                    );
+                })}
+        </TableBody>
+    </Table>
+</TableContainer>
 
-                                return (
-                                    <TableRow key={participante.matricula}>
-                                        <TableCell>{participante.matricula}</TableCell>
-                                        <TableCell>{participante.nome}</TableCell>
-                                        <TableCell>{participante.contato}</TableCell>
-                                        <TableCell>
-                                            <IconButton
-                                                color="primary"
-                                                onClick={() =>
-                                                    navigate(`/editar-participante/${participante.matricula}`)
-                                                }
-                                            >
-                                                <Edit />
-                                            </IconButton>
-                                            <IconButton
-                                                color="secondary"
-                                                onClick={() => handleMarcarInativo(participante.matricula)}
-                                            >
-                                                <RemoveCircle />
-                                            </IconButton>
-                                            <Tooltip
-                                                title={
-                                                    pagamentoMesAtual
-                                                        ? "Contribuição mensal já realizada."
-                                                        : "Registrar contribuição mensal"
-                                                }
-                                                arrow
-                                            >
-                                                <span>
-                                                    <IconButton
-                                                        onClick={() =>
-                                                            handleRegistrarPagamento(participante.matricula)
-                                                        }
-                                                        disabled={pagamentoMesAtual}
-                                                        sx={{
-                                                            color: pagamentoMesAtual ? "green" : "gray",
-                                                            "&.Mui-disabled": { color: "green" },
-                                                        }}
-                                                    >
-                                                        <CheckCircle />
-                                                    </IconButton>
-                                                </span>
-                                            </Tooltip>
-                                            <IconButton
-                                                color="info"
-                                                onClick={() =>
-                                                    navigate(`/detalhes-participante/${participante.matricula}`)
-                                                }
-                                            >
-                                                <Visibility />
-                                            </IconButton>
-                                        </TableCell>
-                                    </TableRow>
-                                );
-                            })}
-                    </TableBody>
-                </Table>
-            </TableContainer>
+
+
+
 
 
             <Snackbar
