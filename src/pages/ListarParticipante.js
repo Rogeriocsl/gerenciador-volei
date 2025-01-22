@@ -11,51 +11,42 @@ import {
     TableHead,
     TableRow,
     IconButton,
+    Tooltip,
     Snackbar,
     Paper,
-    Tooltip,
+    TextField,
+    InputAdornment,
 } from "@mui/material";
+import { Search, ArrowBack, Edit, Visibility, CheckCircle, RemoveCircle, Sort } from "@mui/icons-material";
+import { database } from "../firebase";
+import { ref, get, update } from "firebase/database";
+import "@fontsource/roboto";
 import backgroundImage from "../assets/background.png";
-import { ArrowBack, Edit, Visibility, CheckCircle, RemoveCircle } from "@mui/icons-material"; // Ícones de ações
-import { database } from "../firebase"; // Acesso ao banco Firebase (Realtime Database)
-import { ref, get, update } from "firebase/database"; // Operações no Realtime Database
-import "@fontsource/roboto"; // Fonte Roboto
 
 const ListarParticipante = () => {
     const navigate = useNavigate();
 
-    // Estado para armazenar a lista de participantes
     const [participantes, setParticipantes] = useState([]);
-    const [mensagem, setMensagem] = useState("");
-    // Estado para o Snackbar
+    const [searchTerm, setSearchTerm] = useState("");
+    const [isSortedAsc, setIsSortedAsc] = useState(true); // Controle da ordenação alfabética
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
-    const handleVerDetalhes = (matricula) => {
-        navigate(`/detalhes-participante/${matricula}`);
-    };
-
-    // Fecha o Snackbar
-    const handleCloseSnackbar = () => setOpenSnackbar(false);
-
-    // Função para buscar os participantes do banco de dados
     const fetchParticipantes = async () => {
         try {
             const snapshot = await get(ref(database, "participantes"));
             if (snapshot.exists()) {
                 const data = snapshot.val();
-                const currentMonthYear = new Date().toISOString().slice(0, 7); // Ex: "2025-01"
+                const currentMonthYear = new Date().toISOString().slice(0, 7);
 
                 const participantesComStatus = Object.entries(data).map(([matricula, participante]) => {
-                    // Verifica se há Contribuição para o mês corrente
                     const contribuições = participante.contribuicoesMensais || {};
                     const pagamentoFeito = !!contribuições[currentMonthYear];
-
                     return {
                         matricula,
                         ...participante,
-                        pagamentoFeito, // Adiciona o status de Contribuição
+                        pagamentoFeito,
                     };
                 });
 
@@ -66,7 +57,6 @@ const ListarParticipante = () => {
         }
     };
 
-    // Função para marcar um participante como inativo
     const handleMarcarInativo = async (matricula) => {
         const participanteRef = ref(database, `participantes/${matricula}`);
         try {
@@ -83,42 +73,18 @@ const ListarParticipante = () => {
         }
     };
 
-    // Função para registrar Contribuição do mês corrente
     const handleRegistrarPagamento = async (matricula) => {
         const participanteRef = ref(database, `participantes/${matricula}/contribuicoesMensais`);
         try {
-            const currentMonth = new Date().getMonth() + 1; // Mês atual (1-12)
-            const currentYear = new Date().getFullYear(); // Ano atual
-            const currentMonthYear = `${currentYear}-${String(currentMonth).padStart(2, '0')}`; // Ex: "2025-01"
+            const currentMonth = new Date().getMonth() + 1;
+            const currentYear = new Date().getFullYear();
+            const currentMonthYear = `${currentYear}-${String(currentMonth).padStart(2, "0")}`;
 
-            // Obtém os dados atuais de contribuições
             const snapshot = await get(participanteRef);
-            let updatedData = {};
+            let updatedData = snapshot.exists()
+                ? { ...snapshot.val(), [currentMonthYear]: { mes: currentMonth, ano: currentYear, valor: 1 } }
+                : { [currentMonthYear]: { mes: currentMonth, ano: currentYear, valor: 1 } };
 
-            if (snapshot.exists()) {
-                const data = snapshot.val();
-
-                // Atualiza ou adiciona a contribuição do mês corrente
-                updatedData = {
-                    ...data,
-                    [currentMonthYear]: { // Chave com ano e mês
-                        mes: currentMonth,
-                        ano: currentYear,
-                        valor: 1, // Indica Contribuição realizada
-                    },
-                };
-            } else {
-                // Se não houver contribuições, adiciona o mês corrente
-                updatedData = {
-                    [currentMonthYear]: {
-                        mes: currentMonth,
-                        ano: currentYear,
-                        valor: 1,
-                    },
-                };
-            }
-
-            // Atualiza o banco de dados com as contribuições corrigidas
             await update(participanteRef, updatedData);
 
             setSnackbarMessage("Contribuição registrada com sucesso.");
@@ -133,7 +99,20 @@ const ListarParticipante = () => {
         }
     };
 
-    // UseEffect para buscar os participantes ao carregar o componente
+    const handleSearch = (e) => {
+        setSearchTerm(e.target.value.toLowerCase());
+    };
+
+    const handleSort = () => {
+        setIsSortedAsc((prev) => !prev);
+        setParticipantes((prev) =>
+            [...prev].sort((a, b) => {
+                if (isSortedAsc) return a.nome.localeCompare(b.nome);
+                return b.nome.localeCompare(a.nome);
+            })
+        );
+    };
+
     useEffect(() => {
         fetchParticipantes();
     }, []);
@@ -149,13 +128,13 @@ const ListarParticipante = () => {
                 backgroundPosition: "center",
                 backgroundRepeat: "no-repeat",
                 padding: 2,
+               
             }}
         >
-            {/* Botão de Voltar no canto superior esquerdo */}
             <Button
                 onClick={() => navigate("/home-administrativo")}
                 sx={{
-                    position: "absolute",
+                    position: "fixed",
                     top: 16,
                     left: 16,
                     backgroundColor: "#1976d2",
@@ -167,7 +146,6 @@ const ListarParticipante = () => {
                 <ArrowBack sx={{ fontSize: 30, color: "white" }} />
             </Button>
 
-            {/* Título centralizado */}
             <Typography
                 variant="h4"
                 sx={{
@@ -184,101 +162,113 @@ const ListarParticipante = () => {
                 Listar Participantes
             </Typography>
 
-            {/* Tabela de participantes */}
+
+
             <TableContainer
-    component={Paper}
-    sx={{
-        backgroundColor: "rgba(255, 255, 255, 0.9)",
-        borderRadius: 3,
-        padding: 2,
-        maxWidth: "90%",
-        margin: "auto",
-    }}
->
-    <Table>
-        <TableHead>
-            <TableRow>
-                <TableCell>Matrícula</TableCell>
-                <TableCell>Nome</TableCell>
-                <TableCell>Contato</TableCell>
-                <TableCell>Ações</TableCell>
-            </TableRow>
-        </TableHead>
-        <TableBody>
-            {participantes.map((participante) => {
-                const currentMonthYear = new Date().toISOString().slice(0, 7); // Exemplo: "2025-01"
-                const pagamentoMesAtual = !!participante.contribuicoesMensais?.[currentMonthYear]; // Verifica pagamento do mês corrente
+                component={Paper}
+                sx={{
+                    overflowX: "auto",
+                    backgroundColor: "rgba(255, 255, 255, 0.9)",
+                    borderRadius: 3,
+                    maxWidth: "100%",
+                    margin: "auto",
+                    height: "620px", // Defina a altura fixa aqui
+                }}
+            >
 
-                return (
-                    <TableRow key={participante.matricula}>
-                        <TableCell>{participante.matricula}</TableCell>
-                        <TableCell>{participante.nome}</TableCell>
-                        <TableCell>{participante.contato}</TableCell>
-                        <TableCell>
-                            {/* Botão para editar participante */}
-                            <IconButton
-                                color="primary"
-                                onClick={() => navigate(`/editar-participante/${participante.matricula}`)}
-                                aria-label="Editar participante"
-                            >
-                                <Edit />
-                            </IconButton>
+                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2, margin:4 }}>
+                    <TextField
+                        variant="outlined"
+                        placeholder="Pesquisar por nome ou matrícula..."
+                        fullWidth
+                        value={searchTerm}
+                        onChange={handleSearch}
+                        InputProps={{
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <Search />
+                                </InputAdornment>
+                            ),
+                        }}
+                    />
+                    <IconButton onClick={handleSort} sx={{ ml: 2 }}>
+                        <Sort />
+                    </IconButton>
+                </Box>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Matrícula</TableCell>
+                            <TableCell>Nome</TableCell>
+                            <TableCell>Contato</TableCell>
+                            <TableCell>Ações</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {participantes
+                            .filter(
+                                (p) =>
+                                    String(p.nome).toLowerCase().includes(searchTerm) ||
+                                    String(p.matricula).toLowerCase().includes(searchTerm)
+                            )
+                            .map((participante) => {
+                                const currentMonthYear = new Date().toISOString().slice(0, 7);
+                                const pagamentoMesAtual = !!participante.contribuicoesMensais?.[currentMonthYear];
 
-                            {/* Botão para marcar participante como inativo */}
-                            <IconButton
-                                color="secondary"
-                                onClick={() => handleMarcarInativo(participante.matricula)}
-                                aria-label="Marcar como inativo"
-                            >
-                                <RemoveCircle />
-                            </IconButton>
+                                return (
+                                    <TableRow key={participante.matricula}>
+                                        <TableCell>{participante.matricula}</TableCell>
+                                        <TableCell>{participante.nome}</TableCell>
+                                        <TableCell>{participante.contato}</TableCell>
+                                        <TableCell>
+                                            <IconButton
+                                                color="primary"
+                                                onClick={() => navigate(`/editar-participante/${participante.matricula}`)}
+                                            >
+                                                <Edit />
+                                            </IconButton>
+                                            <IconButton
+                                                color="secondary"
+                                                onClick={() => handleMarcarInativo(participante.matricula)}
+                                            >
+                                                <RemoveCircle />
+                                            </IconButton>
+                                            <Tooltip
+                                                title={
+                                                    pagamentoMesAtual
+                                                        ? "Contribuição mensal já realizada."
+                                                        : "Registrar contribuição mensal"
+                                                }
+                                                arrow
+                                            >
+                                                <span>
+                                                    <IconButton
+                                                        onClick={() => handleRegistrarPagamento(participante.matricula)}
+                                                        disabled={pagamentoMesAtual}
+                                                        sx={{
+                                                            color: pagamentoMesAtual ? "green" : "gray",
+                                                            "&.Mui-disabled": { color: "green" },
+                                                        }}
+                                                    >
+                                                        <CheckCircle />
+                                                    </IconButton>
+                                                </span>
+                                            </Tooltip>
+                                            <IconButton
+                                                color="info"
+                                                onClick={() => navigate(`/detalhes-participante/${participante.matricula}`)}
+                                            >
+                                                <Visibility />
+                                            </IconButton>
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })}
+                    </TableBody>
 
-                            {/* Botão para registrar contribuição mensal */}
-                            <Tooltip
-                                title={pagamentoMesAtual ? "Contribuição mensal já realizada." : "Registrar contribuição mensal"}
-                                arrow
-                                disableFocusListener={!pagamentoMesAtual} // Desativa no foco se habilitado
-                                disableTouchListener={!pagamentoMesAtual} // Desativa no touch se habilitado
-                            >
-                                <span>
-                                    <IconButton
-                                        onClick={() => handleRegistrarPagamento(participante.matricula)}
-                                        disabled={pagamentoMesAtual} // Desativa o botão se já houver pagamento no mês
-                                        sx={{
-                                            color: pagamentoMesAtual ? "green" : "gray", // Verde se pago, cinza se não
-                                            "&.Mui-disabled": {
-                                                color: "green", // Força a cor verde mesmo quando desativado
-                                            },
-                                        }}
-                                        aria-label={
-                                            pagamentoMesAtual
-                                                ? "Contribuição já registrada"
-                                                : "Registrar contribuição mensal"
-                                        }
-                                    >
-                                        <CheckCircle />
-                                    </IconButton>
-                                </span>
-                            </Tooltip>
+                </Table>
+            </TableContainer>
 
-                            {/* Botão para visualizar detalhes */}
-                            <IconButton
-                                color="info"
-                                onClick={() => handleVerDetalhes(participante.matricula)}
-                                aria-label="Visualizar detalhes"
-                            >
-                                <Visibility />
-                            </IconButton>
-                        </TableCell>
-                    </TableRow>
-                );
-            })}
-        </TableBody>
-    </Table>
-</TableContainer>
-
-
-            {/* Snackbar para exibir mensagens */}
             <Snackbar
                 open={openSnackbar}
                 autoHideDuration={6000}
