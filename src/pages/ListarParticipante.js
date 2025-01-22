@@ -128,7 +128,7 @@ const ListarParticipante = () => {
                 backgroundPosition: "center",
                 backgroundRepeat: "no-repeat",
                 padding: 2,
-               
+
             }}
         >
             <Button
@@ -168,15 +168,27 @@ const ListarParticipante = () => {
                 component={Paper}
                 sx={{
                     overflowX: "auto",
-                    backgroundColor: "rgba(255, 255, 255, 0.9)",
+                    backgroundColor: "rgba(255, 255, 255, 1)",
                     borderRadius: 3,
                     maxWidth: "100%",
                     margin: "auto",
-                    height: "620px", // Defina a altura fixa aqui
+                    height: "620px", // Altura fixa do contêiner
                 }}
             >
-
-                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2, margin:4 }}>
+                {/* Campo de busca fixo */}
+                <Box
+                    sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        position: "sticky", // Mantém fixo no topo do contêiner
+                        top: 0, // Gruda no topo
+                        zIndex: 2, // Garante que fique acima da tabela
+                        backgroundColor: "rgba(255, 255, 255, 1)", // Fundo visível
+                        padding: "16px",
+                        borderBottom: "1px solid #ccc", // Opcional: linha para separar o cabeçalho
+                    }}
+                >
                     <TextField
                         variant="outlined"
                         placeholder="Pesquisar por nome ou matrícula..."
@@ -195,9 +207,11 @@ const ListarParticipante = () => {
                         <Sort />
                     </IconButton>
                 </Box>
+
+                {/* Tabela que será rolada */}
                 <Table>
                     <TableHead>
-                        <TableRow>
+                        <TableRow >
                             <TableCell>Matrícula</TableCell>
                             <TableCell>Nome</TableCell>
                             <TableCell>Contato</TableCell>
@@ -223,7 +237,9 @@ const ListarParticipante = () => {
                                         <TableCell>
                                             <IconButton
                                                 color="primary"
-                                                onClick={() => navigate(`/editar-participante/${participante.matricula}`)}
+                                                onClick={() =>
+                                                    navigate(`/editar-participante/${participante.matricula}`)
+                                                }
                                             >
                                                 <Edit />
                                             </IconButton>
@@ -243,7 +259,9 @@ const ListarParticipante = () => {
                                             >
                                                 <span>
                                                     <IconButton
-                                                        onClick={() => handleRegistrarPagamento(participante.matricula)}
+                                                        onClick={() =>
+                                                            handleRegistrarPagamento(participante.matricula)
+                                                        }
                                                         disabled={pagamentoMesAtual}
                                                         sx={{
                                                             color: pagamentoMesAtual ? "green" : "gray",
@@ -256,7 +274,9 @@ const ListarParticipante = () => {
                                             </Tooltip>
                                             <IconButton
                                                 color="info"
-                                                onClick={() => navigate(`/detalhes-participante/${participante.matricula}`)}
+                                                onClick={() =>
+                                                    navigate(`/detalhes-participante/${participante.matricula}`)
+                                                }
                                             >
                                                 <Visibility />
                                             </IconButton>
@@ -265,9 +285,9 @@ const ListarParticipante = () => {
                                 );
                             })}
                     </TableBody>
-
                 </Table>
             </TableContainer>
+
 
             <Snackbar
                 open={openSnackbar}
