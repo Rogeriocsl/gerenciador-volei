@@ -16,10 +16,11 @@ import {
     Paper,
     TextField,
     InputAdornment,
+    Modal,
 } from "@mui/material";
 import { Search, ArrowBack, Edit, Visibility, CheckCircle, RemoveCircle, Sort } from "@mui/icons-material";
 import { database } from "../firebase";
-import { ref, get, update } from "firebase/database";
+import { ref, get, update, remove } from "firebase/database";
 import "@fontsource/roboto";
 import backgroundImage from "../assets/background.png";
 
@@ -31,7 +32,69 @@ const ListarParticipante = () => {
     const [isSortedAsc, setIsSortedAsc] = useState(true); // Controle da ordenação alfabética
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+
+    const [selectedMesAno, setSelectedMesAno] = useState("");
+
+
     const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+    const [openModal, setOpenModal] = useState(false);
+    const [selectedParticipante, setSelectedParticipante] = useState(null);
+
+    const handleOpenModal = (participante) => {
+        setSelectedParticipante(participante);
+        setOpenModal(true);
+    };
+
+    const handleCloseModal = () => {
+        setSelectedParticipante(null);
+        setOpenModal(false);
+    };
+
+    const handleEditParticipante = async () => {
+        if (!selectedParticipante) return;
+        try {
+            const participanteRef = ref(database, `participantes/${selectedParticipante.matricula}`);
+            await update(participanteRef, selectedParticipante);
+            fetchParticipantes(); // Atualiza a lista
+            handleCloseModal(); // Fecha o modal
+            handleSnackbarOpen("Participante atualizado com sucesso!"); // Mostra o feedback
+            console.log("Participante atualizado com sucesso!");
+        } catch (error) {
+            console.error("Erro ao atualizar participante:", error);
+            handleSnackbarOpen("Erro ao atualizar participante. Tente novamente.");
+        }
+    };
+  
+    const handleRemoverPagamento = async (matricula, mesAno) => {
+        if (!matricula || !mesAno) {
+            console.log("Matrícula ou Mês/Ano inválido.");
+            setSnackbarMessage("Matrícula ou Mês/Ano inválido.");
+            setSnackbarSeverity("error");
+            setOpenSnackbar(true);
+            return;
+        }
+    
+        try {
+            const participanteRef = ref(database, `participantes/${matricula}/contribuicoesMensais/${mesAno}`);
+            await remove(participanteRef);
+    
+            // Exibir feedback de sucesso
+            handleSnackbarOpen("Contribuiçao removida com sucesso!"); // Mostra o feedback
+            setSnackbarSeverity("success");
+            setOpenSnackbar(true); 
+            console.log(openSnackbar, "?") // Confirme se isso é chamado
+           // handleCloseModal(); // Fecha o modal
+    
+            // Atualiza a lista de participantes após a remoção
+            await fetchParticipantes();
+        } catch (error) {
+            console.error("Erro ao remover contribuição:", error);
+            setSnackbarMessage("Erro ao remover contribuição. Tente novamente.");
+            setSnackbarSeverity("error");
+            setOpenSnackbar(true);  // Confirme se isso é chamado
+        }
+    };
 
     const fetchParticipantes = async () => {
         try {
@@ -67,7 +130,7 @@ const ListarParticipante = () => {
                 setOpenSnackbar(true);
                 return;
             }
-    
+
             const participante = snapshot.val();
             if (participante.inativo) {
                 setSnackbarMessage("Este participante já está marcado como inativo.");
@@ -75,7 +138,7 @@ const ListarParticipante = () => {
                 setOpenSnackbar(true);
                 return;
             }
-    
+
             await update(participanteRef, { inativo: true });
             setSnackbarMessage("Participante marcado como inativo.");
             setSnackbarSeverity("success");
@@ -88,8 +151,8 @@ const ListarParticipante = () => {
             setOpenSnackbar(true);
         }
     };
-    
-    
+
+
 
     const handleRegistrarPagamento = async (matricula) => {
         const participanteRef = ref(database, `participantes/${matricula}/contribuicoesMensais`);
@@ -131,13 +194,29 @@ const ListarParticipante = () => {
         );
     };
 
+    const handleSnackbarOpen = (message, severity = "success") => {
+        setSnackbarMessage(message); // Define a mensagem
+        setSnackbarSeverity(severity); // Define o tipo (success, error, warning, info)
+        setSnackbarOpen(true); // Abre o Snackbar
+    };
+
+    const handleSnackbarClose = (event, reason) => {
+        if (reason === 'clickaway') {
+            return; // Ignora se o usuário clicar fora
+        }
+        setSnackbarOpen(false); // Fecha o Snackbar
+    };
+
+
+
     useEffect(() => {
         fetchParticipantes();
     }, []);
 
     return (
         <Box
-            sx={{height: "100vh",
+            sx={{
+                height: "100vh",
                 display: "flex",
                 flexDirection: "column",
                 backgroundImage: `url(${backgroundImage})`,
@@ -150,7 +229,8 @@ const ListarParticipante = () => {
         >
             <Button
                 onClick={() => navigate("/home-administrativo")}
-                sx={{position: "fixed",
+                sx={{
+                    position: "fixed",
                     top: { xs: 8, sm: 16 }, // Ajusta a distância do topo em telas pequenas
                     left: { xs: 8, sm: 16 }, // Ajusta a distância da lateral
                     backgroundColor: "#1976d2",
@@ -165,7 +245,8 @@ const ListarParticipante = () => {
 
             <Typography
                 variant="h4"
-                sx={{textAlign: "center",
+                sx={{
+                    textAlign: "center",
                     color: "white",
                     fontFamily: "Roboto, sans-serif",
                     fontWeight: 700,
@@ -181,7 +262,8 @@ const ListarParticipante = () => {
 
             <TableContainer
                 component={Paper}
-                sx={{overflowX: "auto", // Habilita rolagem horizontal em telas pequenas
+                sx={{
+                    overflowX: "auto", // Habilita rolagem horizontal em telas pequenas
                     backgroundColor: "rgba(245, 247, 250, 1)",
                     borderRadius: 3,
                     maxWidth: "100%",
@@ -191,7 +273,8 @@ const ListarParticipante = () => {
                 }}
             >
                 <Box
-                    sx={{display: "flex",
+                    sx={{
+                        display: "flex",
                         flexDirection: { xs: "column", sm: "row" },
                         justifyContent: "space-between",
                         alignItems: "center",
@@ -232,7 +315,8 @@ const ListarParticipante = () => {
                     <TableHead>
                         <TableRow>
                             <TableCell
-                                sx={{fontWeight: "bold",
+                                sx={{
+                                    fontWeight: "bold",
                                     backgroundColor: "#1976d2",
                                     color: "white",
                                     textAlign: "center",
@@ -244,7 +328,8 @@ const ListarParticipante = () => {
                                 Matrícula
                             </TableCell>
                             <TableCell
-                                sx={{fontWeight: "bold",
+                                sx={{
+                                    fontWeight: "bold",
                                     backgroundColor: "#1976d2",
                                     color: "white",
                                     textAlign: "center",
@@ -256,7 +341,8 @@ const ListarParticipante = () => {
                                 Nome
                             </TableCell>
                             <TableCell
-                                sx={{fontWeight: "bold",
+                                sx={{
+                                    fontWeight: "bold",
                                     backgroundColor: "#1976d2",
                                     color: "white",
                                     textAlign: "center",
@@ -269,7 +355,8 @@ const ListarParticipante = () => {
                                 Contato
                             </TableCell>
                             <TableCell
-                                sx={{fontWeight: "bold",
+                                sx={{
+                                    fontWeight: "bold",
                                     backgroundColor: "#1976d2",
                                     color: "white",
                                     textAlign: "center",
@@ -296,7 +383,8 @@ const ListarParticipante = () => {
                                 return (
                                     <TableRow
                                         key={participante.matricula}
-                                        sx={{"&:nth-of-type(odd)": {
+                                        sx={{
+                                            "&:nth-of-type(odd)": {
                                                 backgroundColor: "#f9f9f9",
                                             },
                                             "&:hover": {
@@ -306,7 +394,8 @@ const ListarParticipante = () => {
                                     >
                                         <TableCell
                                             align="center"
-                                            sx={{fontSize: { xs: "0.7rem", sm: "1rem" },
+                                            sx={{
+                                                fontSize: { xs: "0.7rem", sm: "1rem" },
                                                 wordBreak: "break-word",
                                             }}
                                         >
@@ -314,7 +403,8 @@ const ListarParticipante = () => {
                                         </TableCell>
                                         <TableCell
                                             align="center"
-                                            sx={{fontSize: { xs: "0.7rem", sm: "1rem" },
+                                            sx={{
+                                                fontSize: { xs: "0.7rem", sm: "1rem" },
                                                 wordBreak: "break-word",
                                             }}
                                         >
@@ -322,7 +412,8 @@ const ListarParticipante = () => {
                                         </TableCell>
                                         <TableCell
                                             align="center"
-                                            sx={{fontSize: { xs: "0.7rem", sm: "1rem" },
+                                            sx={{
+                                                fontSize: { xs: "0.7rem", sm: "1rem" },
                                                 wordBreak: "break-word",
                                                 display: { xs: "none", sm: "table-cell" }, // Esconde a coluna "Contato" em telas pequenas
                                             }}
@@ -331,7 +422,8 @@ const ListarParticipante = () => {
                                         </TableCell>
                                         <TableCell
                                             align="center"
-                                            sx={{display: "grid",
+                                            sx={{
+                                                display: "grid",
                                                 gridTemplateColumns: "repeat(2, 1fr)",
                                                 gap: 1,
                                                 [theme => theme.breakpoints.down('sm')]: {
@@ -341,7 +433,7 @@ const ListarParticipante = () => {
                                         >
                                             <IconButton
                                                 color="primary"
-                                                onClick={() => navigate(`/editar-participante/${participante.matricula}`)}
+                                                onClick={() => handleOpenModal(participante)}
                                             >
                                                 <Edit sx={{ fontSize: { xs: "1rem", sm: "1.5rem" } }} />
                                             </IconButton>
@@ -363,7 +455,8 @@ const ListarParticipante = () => {
                                                     <IconButton
                                                         onClick={() => handleRegistrarPagamento(participante.matricula)}
                                                         disabled={pagamentoMesAtual}
-                                                        sx={{color: pagamentoMesAtual ? "green" : "gray",
+                                                        sx={{
+                                                            color: pagamentoMesAtual ? "green" : "gray",
                                                             "&.Mui-disabled": { color: "green" },
                                                         }}
                                                     >
@@ -387,17 +480,94 @@ const ListarParticipante = () => {
 
 
 
+            <Modal open={openModal} onClose={handleCloseModal}>
+                <Box sx={{ position: "absolute", top: "50%", left: "50%", textAlign: "center", transform: "translate(-50%, -50%)", bgcolor: "background.paper", p: 4, boxShadow: 24 }}>
+                    <Typography variant="h6" mb={2}>Editar Participante</Typography>
+                    {selectedParticipante && (
+                        <>
+                            <TextField
+                                fullWidth
+                                label="Nome"
+                                value={selectedParticipante.nome || ""}
+                                onChange={(e) =>
+                                    setSelectedParticipante((prev) => ({ ...prev, nome: e.target.value }))
+                                }
+                                margin="normal"
+                            />
+                            <TextField
+                                fullWidth
+                                label="Contato"
+                                value={selectedParticipante.contato || ""}
+                                onChange={(e) =>
+                                    setSelectedParticipante((prev) => ({ ...prev, contato: e.target.value }))
+                                }
+                                margin="normal"
+                            />
 
+                            <TextField
+                                fullWidth
+                                label="Nome Responsavel"
+                                value={selectedParticipante.nomeResponsavel || ""}
+                                onChange={(e) =>
+                                    setSelectedParticipante((prev) => ({ ...prev, nomeResponsavel: e.target.value }))
+                                }
+                                margin="normal"
+                            />
+                            <TextField
+                                fullWidth
+                                label="Contato Responsavel"
+                                value={selectedParticipante.contatoResponsavel || ""}
+                                onChange={(e) =>
+                                    setSelectedParticipante((prev) => ({ ...prev, contatoResponsavel: e.target.value }))
+                                }
+                                margin="normal"
+                            />
+
+                            <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2, direction: "row" }}>
+                                <Button
+                                    variant="outlined"
+                                    color="error"
+                                    onClick={() => {
+                                        const currentMonth = new Date().getMonth() + 1; // mês começa de 0, então somamos 1
+                                        const currentYear = new Date().getFullYear();
+                                        const currentMonthYear = `${currentYear}-${String(currentMonth).padStart(2, "0")}`;
+
+                                        // Agora chama a função de remoção passando o currentMonthYear
+                                        handleRemoverPagamento(selectedParticipante.matricula, currentMonthYear);
+                                    }}
+                                >
+                                    Remover Contribuição Mensal
+                                </Button>
+
+
+
+                                <Button variant="contained" color="primary" onClick={handleEditParticipante}>
+                                    Salvar
+                                </Button>
+                            </Box>
+
+                        </>
+                    )}
+                </Box>
+            </Modal >
 
 
             <Snackbar
-                open={openSnackbar}
-                autoHideDuration={6000}
-                onClose={() => setOpenSnackbar(false)}
-                message={snackbarMessage}
-                anchorOrigin={{ vertical: "top", horizontal: "center" }}
-            />
-        </Box>
+    open={snackbarOpen}
+    autoHideDuration={6000} // Fecha automaticamente após 6 segundos
+    onClose={handleSnackbarClose}
+    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} // Posição do Snackbar
+    message={snackbarMessage}
+    ContentProps={{
+        style: { backgroundColor: snackbarSeverity === "success" ? "green" : "red" }, // Cores de acordo com o tipo
+    }}
+/>
+
+
+
+
+
+        </Box >
     );
 };
 
