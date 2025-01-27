@@ -23,6 +23,7 @@ import { database } from "../firebase";
 import { ref, get, update, remove } from "firebase/database";
 import "@fontsource/roboto";
 import backgroundImage from "../assets/background.png";
+import DetalhesParticipanteModal from "./DetalhesParticipanteModal";
 
 const ListarParticipante = () => {
     const navigate = useNavigate();
@@ -33,8 +34,7 @@ const ListarParticipante = () => {
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarOpen, setSnackbarOpen] = useState(false);
-
-    const [selectedMesAno, setSelectedMesAno] = useState("");
+    const [openDetalhesModal, setOpenDetalhesModal] = useState(false);
 
 
     const [snackbarSeverity, setSnackbarSeverity] = useState("success");
@@ -51,6 +51,11 @@ const ListarParticipante = () => {
         setOpenModal(false);
     };
 
+    const handleVerDetalhes = (participante) => {
+        setSelectedParticipante(participante);
+        setOpenDetalhesModal(true);
+    };
+
     const handleEditParticipante = async () => {
         if (!selectedParticipante) return;
         try {
@@ -65,7 +70,7 @@ const ListarParticipante = () => {
             handleSnackbarOpen("Erro ao atualizar participante. Tente novamente.");
         }
     };
-  
+
     const handleRemoverPagamento = async (matricula, mesAno) => {
         if (!matricula || !mesAno) {
             console.log("Matrícula ou Mês/Ano inválido.");
@@ -74,18 +79,18 @@ const ListarParticipante = () => {
             setOpenSnackbar(true);
             return;
         }
-    
+
         try {
             const participanteRef = ref(database, `participantes/${matricula}/contribuicoesMensais/${mesAno}`);
             await remove(participanteRef);
-    
+
             // Exibir feedback de sucesso
             handleSnackbarOpen("Contribuiçao removida com sucesso!"); // Mostra o feedback
             setSnackbarSeverity("success");
-            setOpenSnackbar(true); 
+            setOpenSnackbar(true);
             console.log(openSnackbar, "?") // Confirme se isso é chamado
-           // handleCloseModal(); // Fecha o modal
-    
+            // handleCloseModal(); // Fecha o modal
+
             // Atualiza a lista de participantes após a remoção
             await fetchParticipantes();
         } catch (error) {
@@ -95,6 +100,31 @@ const ListarParticipante = () => {
             setOpenSnackbar(true);  // Confirme se isso é chamado
         }
     };
+    /*
+        const fetchParticipantes = async () => {
+            try {
+                const snapshot = await get(ref(database, "participantes"));
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    const currentMonthYear = new Date().toISOString().slice(0, 7);
+    
+                    const participantesComStatus = Object.entries(data).map(([matricula, participante]) => {
+                        const contribuições = participante.contribuicoesMensais || {};
+                        const pagamentoFeito = !!contribuições[currentMonthYear];
+                        return {
+                            matricula,
+                            ...participante,
+                            pagamentoFeito,
+                        };
+                    });
+    
+                    setParticipantes(participantesComStatus);
+                }
+            } catch (error) {
+                console.error("Erro ao carregar participantes:", error);
+            }
+        };
+    */
 
     const fetchParticipantes = async () => {
         try {
@@ -103,15 +133,17 @@ const ListarParticipante = () => {
                 const data = snapshot.val();
                 const currentMonthYear = new Date().toISOString().slice(0, 7);
 
-                const participantesComStatus = Object.entries(data).map(([matricula, participante]) => {
-                    const contribuições = participante.contribuicoesMensais || {};
-                    const pagamentoFeito = !!contribuições[currentMonthYear];
-                    return {
-                        matricula,
-                        ...participante,
-                        pagamentoFeito,
-                    };
-                });
+                const participantesComStatus = Object.entries(data)
+                    .filter(([_, participante]) => !participante.inativo) // Exclui participantes inativos
+                    .map(([matricula, participante]) => {
+                        const contribuições = participante.contribuicoesMensais || {};
+                        const pagamentoFeito = !!contribuições[currentMonthYear];
+                        return {
+                            matricula,
+                            ...participante,
+                            pagamentoFeito,
+                        };
+                    });
 
                 setParticipantes(participantesComStatus);
             }
@@ -125,33 +157,24 @@ const ListarParticipante = () => {
         try {
             const snapshot = await get(participanteRef);
             if (!snapshot.exists()) {
-                setSnackbarMessage("Participante não encontrado.");
-                setSnackbarSeverity("error");
-                setOpenSnackbar(true);
+                handleSnackbarOpen("Participante não encontrado.", "error");
                 return;
             }
 
             const participante = snapshot.val();
             if (participante.inativo) {
-                setSnackbarMessage("Este participante já está marcado como inativo.");
-                setSnackbarSeverity("info");
-                setOpenSnackbar(true);
+                handleSnackbarOpen("Este participante já está marcado como inativo.", "info");
                 return;
             }
 
             await update(participanteRef, { inativo: true });
-            setSnackbarMessage("Participante marcado como inativo.");
-            setSnackbarSeverity("success");
-            setOpenSnackbar(true);
-            await fetchParticipantes();  // Chama fetch novamente após atualizar
+            handleSnackbarOpen("Participante marcado como inativo.", "success");
+            await fetchParticipantes(); // Atualiza a lista após marcar como inativo
         } catch (error) {
             console.error("Erro ao marcar como inativo:", error);
-            setSnackbarMessage("Erro ao marcar participante como inativo.");
-            setSnackbarSeverity("error");
-            setOpenSnackbar(true);
+            handleSnackbarOpen("Erro ao marcar participante como inativo.", "error");
         }
     };
-
 
 
     const handleRegistrarPagamento = async (matricula) => {
@@ -466,7 +489,7 @@ const ListarParticipante = () => {
                                             </Tooltip>
                                             <IconButton
                                                 color="info"
-                                                onClick={() => navigate(`/detalhes-participante/${participante.matricula}`)}
+                                                onClick={() => handleVerDetalhes(participante)}
                                             >
                                                 <Visibility sx={{ fontSize: { xs: "1rem", sm: "1.5rem" } }} />
                                             </IconButton>
@@ -553,17 +576,22 @@ const ListarParticipante = () => {
 
 
             <Snackbar
-    open={snackbarOpen}
-    autoHideDuration={6000} // Fecha automaticamente após 6 segundos
-    onClose={handleSnackbarClose}
-    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} // Posição do Snackbar
-    message={snackbarMessage}
-    ContentProps={{
-        style: { backgroundColor: snackbarSeverity === "success" ? "green" : "red" }, // Cores de acordo com o tipo
-    }}
-/>
+                open={snackbarOpen}
+                autoHideDuration={6000} // Fecha automaticamente após 6 segundos
+                onClose={handleSnackbarClose}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} // Posição do Snackbar
+                message={snackbarMessage}
+                ContentProps={{
+                    style: { backgroundColor: snackbarSeverity === "success" ? "green" : "red" }, // Cores de acordo com o tipo
+                }}
+            />
 
 
+            <DetalhesParticipanteModal
+                open={openDetalhesModal}
+                onClose={() => setOpenDetalhesModal(false)}
+                participante={selectedParticipante}
+            />
 
 
 
