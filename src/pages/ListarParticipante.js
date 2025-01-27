@@ -18,7 +18,7 @@ import {
     InputAdornment,
     Modal,
 } from "@mui/material";
-import { Search, ArrowBack, Edit, Visibility, CheckCircle, RemoveCircle, Sort } from "@mui/icons-material";
+import { Search, ArrowBack, Edit, Visibility, CheckCircle, RemoveCircle, Sort, Download } from "@mui/icons-material";
 import { database } from "../firebase";
 import { ref, get, update, remove } from "firebase/database";
 import "@fontsource/roboto";
@@ -100,31 +100,20 @@ const ListarParticipante = () => {
             setOpenSnackbar(true);  // Confirme se isso é chamado
         }
     };
-    /*
-        const fetchParticipantes = async () => {
-            try {
-                const snapshot = await get(ref(database, "participantes"));
-                if (snapshot.exists()) {
-                    const data = snapshot.val();
-                    const currentMonthYear = new Date().toISOString().slice(0, 7);
-    
-                    const participantesComStatus = Object.entries(data).map(([matricula, participante]) => {
-                        const contribuições = participante.contribuicoesMensais || {};
-                        const pagamentoFeito = !!contribuições[currentMonthYear];
-                        return {
-                            matricula,
-                            ...participante,
-                            pagamentoFeito,
-                        };
-                    });
-    
-                    setParticipantes(participantesComStatus);
-                }
-            } catch (error) {
-                console.error("Erro ao carregar participantes:", error);
-            }
-        };
-    */
+
+    const handleExportToCSV = () => {
+        const header = "Nome,Matrícula\n";
+        const rows = participantes
+            .map(({ nome, matricula }) => `${nome},${matricula}`)
+            .join("\n");
+        const csvContent = header + rows;
+
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "participantes.csv";
+        link.click();
+    };
 
     const fetchParticipantes = async () => {
         try {
@@ -332,6 +321,10 @@ const ListarParticipante = () => {
                     <IconButton onClick={handleSort} sx={{ ml: { xs: 0, sm: 2 } }}>
                         <Sort />
                     </IconButton>
+                    <IconButton  onClick={handleExportToCSV} sx={{ ml: { xs: 0, sm: 2 } }}>
+                        <Download />
+                    </IconButton>
+
                 </Box>
 
                 <Table sx={{ width: "100%" }}> {/* Ajuste da largura para 100% */}
