@@ -92,32 +92,31 @@ const HomeAdmin = () => {
           {/* Botão Registrar Participante */}
           <Button
             variant="contained"
-            color="primary"
-            startIcon={<PersonAdd  />} // Ícone maior
+            color="secondary"
+            startIcon={<PersonAdd sx={{ fontSize: "3rem" }} />}
             sx={{
               width: 200,
               height: 200,
-              fontSize: "1.1rem",
+              fontSize: "1rem",
               borderRadius: 3,
               textTransform: "none",
-              backgroundColor: "#1976d2", // Tom esportivo
+              backgroundColor: "#00f", // Tom esportivo
               '&:hover': {
-                backgroundColor: "#1565c0", // Efeito de hover
+                backgroundColor: "#2510a3", // Efeito de hover
               },
               boxShadow: 3, // Sombra sutil
               display: "flex",
               flexDirection: "column", // Organiza o ícone em cima do texto
               justifyContent: "center", // Centraliza o conteúdo
               alignItems: "center", // Centraliza o conteúdo
-              padding: 2, // Padding para ajustar o espaço
+              padding: 2,
               '& .MuiSvgIcon-root': { // Estiliza o ícone dentro do botão
                 fontSize: "6rem"
-               }
+               } // 
             }}
             onClick={() => handleNavigate("/registrar-participante")}
-          >
-            Registrar Participante
-          </Button>
+
+          >Registrar Participante</Button>
 
           {/* Botão Listar Participantes */}
           <Button

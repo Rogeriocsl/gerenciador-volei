@@ -1,6 +1,8 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import { Box, TextField, IconButton, Typography } from "@mui/material";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Box, TextField, IconButton, Typography, Button, Snackbar } from "@mui/material";
+import { database } from "../firebase";
+import { ref, get } from "firebase/database";
 import backgroundImage from "../assets/background.png";
 import bolaImage from "../assets/bola.png";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
@@ -8,6 +10,44 @@ import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import "@fontsource/roboto"; // Fonte Roboto
 
 const LoginParticipante = () => {
+  const [matricula, setMatricula] = useState("");
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("error");
+  const navigate = useNavigate();
+
+  // Função para verificar a matrícula
+  const handleLogin = async () => {
+    if (!matricula.trim()) {
+      setSnackbarMessage("Por favor, insira sua matrícula.");
+      setSnackbarSeverity("warning");
+      setSnackbarOpen(true);
+      return;
+    }
+
+    try {
+      const snapshot = await get(ref(database, `participantes/${matricula}`));
+      if (snapshot.exists()) {
+        navigate(`/home-participante`, { state: { matricula } }); // Redireciona e passa a matrícula como estado
+      } else {
+        setSnackbarMessage("Matrícula não encontrada. Verifique os dados.");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
+      }
+    } catch (error) {
+      console.error("Erro ao verificar matrícula:", error);
+      setSnackbarMessage("Erro ao realizar o login. Tente novamente.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    }
+  };
+
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === "clickaway") return;
+    setSnackbarOpen(false);
+  };
+
+
   return (
     <Box
       sx={{
@@ -76,6 +116,8 @@ const LoginParticipante = () => {
           label="Matrícula"
           variant="filled"
           placeholder="Digite sua matrícula"
+          value={matricula}
+          onChange={(e) => setMatricula(e.target.value)}
           fullWidth
           sx={{
             maxWidth: 300,
@@ -86,41 +128,44 @@ const LoginParticipante = () => {
           }}
         />
 
-        {/* Botão de ação */}
-        <Link to="/home-participante" style={{ textDecoration: "none" }}>
-          <IconButton
-            color="primary"
-            sx={{
-              width: 60,
-              height: 60,
-              color: "#fff",
-              backgroundColor: "#000",
-              borderRadius: "50%",
-              marginBottom: 2,
-              "&:hover": {
-                backgroundColor: "#444",
-              },
-            }}
-          >
-            <ArrowForwardIcon />
-          </IconButton>
-        </Link>
+        <IconButton
+          color="primary"
+          onClick={handleLogin}
+          sx={{
+            width: 60,
+            height: 60,
+            color: "#fff",
+            backgroundColor: "#000",
+            borderRadius: "50%",
+            marginBottom: 2,
+            "&:hover": {
+              backgroundColor: "#444",
+            },
+          }}
+        >
+          <ArrowForwardIcon />
+        </IconButton>
+
 
         {/* Link para Login Administrativo */}
-        <Link to="/login-administrativo" style={{ textDecoration: "none" }}>
-          <Typography
-            variant="h6"
-            sx={{
-              fontFamily: "'Roboto', sans-serif",
-              fontSize: { xs: 14, md: 16 }, // Ajuste dinâmico da fonte
-              color: "#000",
-              textAlign: "center",
-              marginTop: 2, // Adicionando um pequeno espaço acima do link
-            }}
-          >
-            Login Administrativo
-          </Typography>
-        </Link>
+        <Button
+          variant="outlined"
+          color="secondary"
+          onClick={() => navigate("/login-administrativo")}
+          
+        >
+          Login Administrativo
+        </Button>
+
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={6000}
+          onClose={handleSnackbarClose}
+          message={snackbarMessage}
+          ContentProps={{
+            style: { backgroundColor: snackbarSeverity === "success" ? "green" : "red" },
+          }}
+        />
       </Box>
     </Box>
   );
