@@ -2,10 +2,49 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Button, Typography } from "@mui/material";
 import backgroundImage from "../assets/background.png";
-import { AddCircle, ListAlt, Block, ExitToApp, PersonAdd } from "@mui/icons-material"; // Ícones
-
+import { PersonAdd, ListAlt, Block, ExitToApp } from "@mui/icons-material";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
+
+// Estilos compartilhados para os botões
+const buttonStyles = {
+  width: 200,
+  height: 200,
+  fontSize: "1rem",
+  borderRadius: 3,
+  textTransform: "none",
+  boxShadow: 3,
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "center",
+  alignItems: "center",
+  padding: 2,
+  '& .MuiSvgIcon-root': {
+    fontSize: "6rem !important", // Força o tamanho do ícone
+  },
+  '&:hover': {
+    opacity: 0.9,
+  },
+};
+
+// Componente reutilizável para os botões
+const ActionButton = ({ icon: Icon, label, color, onClick }) => (
+  <Button
+    variant="contained"
+    color={color}
+    startIcon={<Icon sx={{ fontSize: "6rem" }} />} // Tamanho do ícone definido explicitamente
+    sx={{
+      ...buttonStyles,
+      backgroundColor: color === "error" ? "#f44336" : color === "secondary" ? "#4caf50" : "#00f",
+      '&:hover': {
+        backgroundColor: color === "error" ? "#d32f2f" : color === "secondary" ? "#388e3c" : "#2510a3",
+      },
+    }}
+    onClick={onClick}
+  >
+    {label}
+  </Button>
+);
 
 const HomeAdmin = () => {
   const navigate = useNavigate();
@@ -18,10 +57,11 @@ const HomeAdmin = () => {
   // Função de logout
   const handleLogout = async () => {
     try {
-      await signOut(auth); // Desconecta o usuário do Firebase
-      navigate("/login-administrativo"); // Redireciona para a página de login
+      await signOut(auth);
+      navigate("/login-administrativo");
     } catch (error) {
       console.error("Erro ao fazer logout:", error);
+      alert("Erro ao fazer logout. Tente novamente.");
     }
   };
 
@@ -56,13 +96,13 @@ const HomeAdmin = () => {
             borderRadius: "50%",
             padding: 2,
             marginBottom: 1,
-            backgroundColor: "#f44336", // Cor de fundo vermelha para logout
+            backgroundColor: "#f44336",
             '&:hover': {
-              backgroundColor: "#d32f2f", // Efeito de hover
+              backgroundColor: "#d32f2f",
             },
           }}
         >
-          <ExitToApp sx={{ fontSize: 30 }} /> {/* Ícone de sair */}
+          <ExitToApp sx={{ fontSize: 30 }} />
         </Button>
         <Typography variant="caption" sx={{ color: "#3c3c3c", fontWeight: "bold" }}>
           Logout
@@ -89,96 +129,25 @@ const HomeAdmin = () => {
             width: 800,
           }}
         >
-          {/* Botão Registrar Participante */}
-          <Button
-            variant="contained"
-            color="secondary"
-            startIcon={<PersonAdd sx={{ fontSize: "3rem" }} />}
-            sx={{
-              width: 200,
-              height: 200,
-              fontSize: "1rem",
-              borderRadius: 3,
-              textTransform: "none",
-              backgroundColor: "#00f", // Tom esportivo
-              '&:hover': {
-                backgroundColor: "#2510a3", // Efeito de hover
-              },
-              boxShadow: 3, // Sombra sutil
-              display: "flex",
-              flexDirection: "column", // Organiza o ícone em cima do texto
-              justifyContent: "center", // Centraliza o conteúdo
-              alignItems: "center", // Centraliza o conteúdo
-              padding: 2,
-              '& .MuiSvgIcon-root': { // Estiliza o ícone dentro do botão
-                fontSize: "6rem"
-               } // 
-            }}
+          {/* Botões reutilizáveis */}
+          <ActionButton
+            icon={PersonAdd}
+            label="Registrar Participante"
+            color="primary"
             onClick={() => handleNavigate("/registrar-participante")}
-
-          >Registrar Participante</Button>
-
-          {/* Botão Listar Participantes */}
-          <Button
-            variant="contained"
+          />
+          <ActionButton
+            icon={ListAlt}
+            label="Listar Participantes"
             color="secondary"
-            startIcon={<ListAlt sx={{ fontSize: "3rem" }} />}
-            sx={{
-              width: 200,
-              height: 200,
-              fontSize: "1.1rem",
-              borderRadius: 3,
-              textTransform: "none",
-              backgroundColor: "#4caf50", // Tom esportivo
-              '&:hover': {
-                backgroundColor: "#388e3c", // Efeito de hover
-              },
-              boxShadow: 3, // Sombra sutil
-              display: "flex",
-              flexDirection: "column", // Organiza o ícone em cima do texto
-              justifyContent: "center", // Centraliza o conteúdo
-              alignItems: "center", // Centraliza o conteúdo
-              padding: 2,
-              '& .MuiSvgIcon-root': { // Estiliza o ícone dentro do botão
-                fontSize: "6rem"
-               } // 
-            }}
             onClick={() => handleNavigate("/listar-participantes")}
-          >
-            Listar Participantes
-          </Button>
-
-          {/* Botão Participantes Inativos */}
-          <Button
-            variant="contained"
+          />
+          <ActionButton
+            icon={Block}
+            label="Participantes Inativos"
             color="error"
-            startIcon={<Block />}
-            sx={{
-              width: 200,
-              height: 200,
-              fontSize: "1rem",
-              borderRadius: 3,
-              textTransform: "none",
-              backgroundColor: "#f44336", // Tom esportivo
-              '&:hover': {
-                backgroundColor: "#d32f2f", // Efeito de hover
-              },
-              boxShadow: 3, // Sombra sutil
-              display: "flex",
-              flexDirection: "column", // Organiza o ícone em cima do texto
-              justifyContent: "center", // Centraliza o conteúdo
-              alignItems: "center", // Centraliza o conteúdo
-              padding: 2, // Padding para ajustar o espaço
-              '& .MuiSvgIcon-root': { // Estiliza o ícone dentro do botão
-                fontSize: "6rem", // Ajusta o tamanho do ícone
-              }
-            }}
             onClick={() => handleNavigate("/participantes-inativos")}
-          >
-            Participantes Inativos
-          </Button>
-
-
+          />
         </Box>
       </Box>
     </Box>

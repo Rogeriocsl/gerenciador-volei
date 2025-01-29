@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   Box,
   Typography,
@@ -16,11 +16,11 @@ import {
 } from "@mui/material";
 import { database } from "../firebase";
 import { ref, get, update } from "firebase/database";
-import { useLocation } from "react-router-dom"; // Importando para pegar o estado da navegação
+import { useLocation } from "react-router-dom";
 
 const HomeParticipante = () => {
-  const location = useLocation(); // Usando useLocation para acessar o estado da navegação
-  const matricula = location.state?.matricula; // Obtendo a matrícula do estado passado
+  const location = useLocation();
+  const matricula = location.state?.matricula;
 
   const [participante, setParticipante] = useState(null);
   const [historicoContribuicoes, setHistoricoContribuicoes] = useState([]);
@@ -28,46 +28,44 @@ const HomeParticipante = () => {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
-  // Fetch informações do participante
-  const fetchParticipante = async () => {
+  const showSnackbar = (message, severity) => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
+  };
+
+  const fetchParticipante = useCallback(async () => {
     try {
       if (!matricula) {
-        setSnackbarMessage("Matrícula não fornecida.");
-        setSnackbarSeverity("error");
-        setSnackbarOpen(true);
+        showSnackbar("Matrícula não fornecida.", "error");
         return;
       }
+
       const snapshot = await get(ref(database, `participantes/${matricula}`));
       if (snapshot.exists()) {
         const data = snapshot.val();
         setParticipante(data);
         setHistoricoContribuicoes(data.contribuicoesMensais || []);
       } else {
-        setSnackbarMessage("Participante não encontrado.");
-        setSnackbarSeverity("error");
-        setSnackbarOpen(true);
+        showSnackbar("Participante não encontrado.", "error");
       }
     } catch (error) {
       console.error("Erro ao buscar participante:", error);
-      setSnackbarMessage("Erro ao carregar as informações.");
-      setSnackbarSeverity("error");
-      setSnackbarOpen(true);
+      showSnackbar("Erro ao carregar as informações.", "error");
     }
-  };
+  }, [matricula]);
 
-  // Marcar presença no treino
   const handleMarcarPresenca = async () => {
     const dataAtual = new Date();
     const diaAtual = `${dataAtual.getFullYear()}-${String(dataAtual.getMonth() + 1).padStart(
       2,
       "0"
     )}-${String(dataAtual.getDate()).padStart(2, "0")}`;
+
     try {
       const presencas = participante.presencas || [];
       if (presencas.includes(diaAtual)) {
-        setSnackbarMessage("Presença já marcada para hoje.");
-        setSnackbarSeverity("warning");
-        setSnackbarOpen(true);
+        showSnackbar("Presença já marcada para hoje.", "warning");
         return;
       }
 
@@ -81,14 +79,10 @@ const HomeParticipante = () => {
         presencas: novasPresencas,
       }));
 
-      setSnackbarMessage("Presença marcada com sucesso!");
-      setSnackbarSeverity("success");
-      setSnackbarOpen(true);
+      showSnackbar("Presença marcada com sucesso!", "success");
     } catch (error) {
       console.error("Erro ao marcar presença:", error);
-      setSnackbarMessage("Erro ao marcar presença.");
-      setSnackbarSeverity("error");
-      setSnackbarOpen(true);
+      showSnackbar("Erro ao marcar presença.", "error");
     }
   };
 
@@ -99,7 +93,7 @@ const HomeParticipante = () => {
 
   useEffect(() => {
     fetchParticipante();
-  }, [matricula]);
+  }, [fetchParticipante]);
 
   return (
     <Box p={3}>
@@ -126,7 +120,6 @@ const HomeParticipante = () => {
             </Button>
           </Box>
 
-
           {historicoContribuicoes && Object.entries(historicoContribuicoes).length > 0 ? (
             <TableContainer component={Paper}>
               <Table>
@@ -149,7 +142,6 @@ const HomeParticipante = () => {
           ) : (
             <Typography variant="body1">Nenhuma contribuição registrada.</Typography>
           )}
-
         </>
       ) : (
         <Typography variant="body1">Carregando informações...</Typography>
