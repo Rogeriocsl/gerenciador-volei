@@ -17,6 +17,7 @@ import {
     TextField,
     InputAdornment,
     Modal,
+    MenuItem,
 } from "@mui/material";
 import { Search, ArrowBack, Edit, Visibility, CheckCircle, RemoveCircle, Sort, Download } from "@mui/icons-material";
 import { database } from "../firebase";
@@ -40,6 +41,7 @@ const ListarParticipante = () => {
     const [snackbarSeverity, setSnackbarSeverity] = useState("success");
     const [openModal, setOpenModal] = useState(false);
     const [selectedParticipante, setSelectedParticipante] = useState(null);
+    const [filtroTurma, setFiltroTurma] = useState("todas");
 
     const handleOpenModal = (participante) => {
         setSelectedParticipante(participante);
@@ -287,18 +289,20 @@ const ListarParticipante = () => {
                 <Box
                     sx={{
                         display: "flex",
-                        flexDirection: { xs: "column", sm: "row" },
+                        flexDirection: { xs: "row", sm: "row" }, // Sempre em linha
+                        flexWrap: "wrap", // Permite que os elementos quebrem para a próxima linha se necessário
                         justifyContent: "space-between",
                         alignItems: "center",
                         position: "sticky",
                         top: 0,
                         zIndex: 2,
                         backgroundColor: "rgba(255, 255, 255, 1)",
-                        padding: { xs: "8px 8px", sm: "16px" },
+                        padding: { xs: "8px", sm: "16px" }, // Ajuste do padding para telas pequenas
                         borderBottom: "1px solid #e0e0e0",
-                        gap: { xs: 1, sm: 2 },
+                        gap: { xs: 1, sm: 1 }, // Reduz o espaçamento entre os elementos em telas grandes
                     }}
                 >
+                    {/* Campo de Pesquisa */}
                     <TextField
                         variant="outlined"
                         placeholder="Pesquisar por nome ou matrícula..."
@@ -316,15 +320,43 @@ const ListarParticipante = () => {
                             "& .MuiOutlinedInput-root": {
                                 borderRadius: "8px",
                             },
+                            flex: { xs: "1 1 100%", sm: "2 1 auto" }, // Ocupa mais espaço em telas grandes
+                            mb: { xs: 1, sm: 0 }, // Margem inferior em telas pequenas
                         }}
                     />
-                    <IconButton onClick={handleSort} sx={{ ml: { xs: 0, sm: 2 } }}>
-                        <Sort />
-                    </IconButton>
-                    <IconButton  onClick={handleExportToCSV} sx={{ ml: { xs: 0, sm: 2 } }}>
-                        <Download />
-                    </IconButton>
 
+                    {/* Botões de Ordenação e Exportação */}
+                    <Box
+                        sx={{
+                            display: "flex",
+                            gap: 1, // Espaçamento entre os ícones
+                            flex: { xs: "0 1 auto", sm: "0 0 auto" }, // Não cresce em telas grandes
+                        }}
+                    >
+                        <IconButton onClick={handleSort}>
+                            <Sort />
+                        </IconButton>
+                        <IconButton onClick={handleExportToCSV}>
+                            <Download />
+                        </IconButton>
+                    </Box>
+
+                    {/* Filtro de Turma */}
+                    <TextField
+                        select
+                        label="Filtrar por Turma"
+                        value={filtroTurma}
+                        onChange={(e) => setFiltroTurma(e.target.value)}
+                        sx={{
+                            minWidth: 120,
+                            flex: { xs: "1 1 50%", sm: "1 1 auto" }, // Ocupa espaço proporcional em telas grandes
+                            mb: { xs: 1, sm: 0 }, // Margem inferior em telas pequenas
+                        }}
+                    >
+                        <MenuItem value="todas">Todas</MenuItem>
+                        <MenuItem value="Terça-feira">Terça-feira</MenuItem>
+                        <MenuItem value="Quinta-feira">Quinta-feira</MenuItem>
+                    </TextField>
                 </Box>
 
                 <Table sx={{ width: "100%" }}> {/* Ajuste da largura para 100% */}
@@ -387,11 +419,14 @@ const ListarParticipante = () => {
                     </TableHead>
                     <TableBody>
                         {participantes
-                            .filter(
-                                (p) =>
-                                    String(p.nome).toLowerCase().includes(searchTerm) ||
-                                    String(p.matricula).toLowerCase().includes(searchTerm)
-                            )
+                            .filter((p) => {
+                                const matchesSearch = String(p.nome).toLowerCase().includes(searchTerm) ||
+                                    String(p.matricula).toLowerCase().includes(searchTerm);
+                                const matchesTurma = filtroTurma === "todas" ||
+                                    (filtroTurma === "Terça-feira" && p.turma === "Terça-feira") ||
+                                    (filtroTurma === "Quinta-feira" && p.turma === "Quinta-feira");
+                                return matchesSearch && matchesTurma;
+                            })
                             .map((participante) => {
                                 const currentMonthYear = new Date().toISOString().slice(0, 7);
                                 const pagamentoMesAtual = !!participante.contribuicoesMensais?.[currentMonthYear];
