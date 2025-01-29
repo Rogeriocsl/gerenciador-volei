@@ -134,8 +134,6 @@ const RegistrarParticipante = () => {
                     color: "white",
                     fontFamily: "Roboto, sans-serif",
                     fontWeight: 700,
-                    marginBottom: 4,
-                    marginTop: 6,
                     fontSize: { xs: "2rem", sm: "3rem", md: "4rem" },
                     textShadow: "2px 2px 8px rgba(0, 0, 0, 0.4)",
                 }}
@@ -150,6 +148,7 @@ const RegistrarParticipante = () => {
                     justifyContent: "center",
                     alignItems: "center",
                     height: "100%",
+                    paddingBottom: 10,
                 }}
             >
                 <Box
