@@ -6,6 +6,7 @@ import HomeAdmin from "./pages/HomeAdmin";
 import HomeParticipante from "./pages/HomeParticipante";
 import RegistrarParticipante from "./pages/RegistrarParticipante";
 import ListarParticipante from "./pages/ListarParticipante";
+import ListarInativos from "./pages/ListarInativos";
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         <Route path="/" element={<LoginParticipante />} />
         <Route path="/home-participante" element={<HomeParticipante />} />
         <Route path="/listar-participantes" element={<ListarParticipante />} />
+        <Route path="/listar-inativos" element={<ListarInativos />} />
         <Route path="/registrar-participante" element={<RegistrarParticipante />} />
         <Route path="/login-administrativo" element={<LoginAdmin />} />
         <Route path="/home-administrativo" element={<HomeAdmin />} />

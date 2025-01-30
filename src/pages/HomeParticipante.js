@@ -13,14 +13,19 @@ import {
   TableRow,
   Paper,
   Snackbar,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { database } from "../firebase";
 import { ref, get, update } from "firebase/database";
 import { useLocation } from "react-router-dom";
+import backgroundImage from "../assets/background.png";
 
 const HomeParticipante = () => {
   const location = useLocation();
   const matricula = location.state?.matricula;
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [participante, setParticipante] = useState(null);
   const [historicoContribuicoes, setHistoricoContribuicoes] = useState([]);
@@ -45,7 +50,7 @@ const HomeParticipante = () => {
       if (snapshot.exists()) {
         const data = snapshot.val();
         setParticipante(data);
-        setHistoricoContribuicoes(data.contribuicoesMensais || []);
+        setHistoricoContribuicoes(data.contribuicoesMensais || {});
       } else {
         showSnackbar("Participante não encontrado.", "error");
       }
@@ -64,9 +69,23 @@ const HomeParticipante = () => {
 
     try {
       const presencas = participante.presencas || [];
+
+      // Verifica se a presença já foi marcada hoje
       if (presencas.includes(diaAtual)) {
         showSnackbar("Presença já marcada para hoje.", "warning");
         return;
+      }
+
+      // Verifica se a presença foi marcada nos últimos 7 dias
+      const ultimaPresenca = presencas[presencas.length - 1];
+      if (ultimaPresenca) {
+        const dataUltimaPresenca = new Date(ultimaPresenca);
+        const diferencaDias = (dataAtual - dataUltimaPresenca) / (1000 * 60 * 60 * 24);
+
+        if (diferencaDias < 7) {
+          showSnackbar("Presença só pode ser marcada uma vez a cada 7 dias.", "warning");
+          return;
+        }
       }
 
       const novasPresencas = [...presencas, diaAtual];
@@ -96,37 +115,67 @@ const HomeParticipante = () => {
   }, [fetchParticipante]);
 
   return (
-    <Box p={3}>
+    <Box sx={{
+      height: "100vh",
+      display: "flex",
+      flexDirection: "column",
+      backgroundImage: `url(${backgroundImage})`,
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+      backgroundRepeat: "no-repeat",
+    }} p={isMobile ? 2 : 3}>
       {participante ? (
         <>
-          <Card sx={{ mb: 3 }}>
+          <Card sx={{ mb: 3, borderRadius: 2, boxShadow: 3 }}>
             <CardContent>
-              <Typography variant="h4" gutterBottom>
+              <Typography variant="h4" gutterBottom sx={{ fontWeight: "bold" }}>
                 Bem-vindo, {participante.nome}
               </Typography>
-              <Typography variant="subtitle1">
+              <Typography variant="subtitle1" color="textSecondary">
                 Matrícula: {matricula}
               </Typography>
-              <Typography variant="subtitle1">
-                Data de Registro: {participante.dataRegistro || "N/A"}
-              </Typography>
+
             </CardContent>
           </Card>
 
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-            <Typography variant="h5">Histórico de Contribuições</Typography>
-            <Button variant="contained" color="primary" onClick={handleMarcarPresenca}>
+          <Box
+            display="flex"
+            flexDirection={isMobile ? "column" : "row"}
+            justifyContent="space-between"
+            alignItems={isMobile ? "flex-start" : "center"}
+            mb={3}
+            gap={2}
+          >
+            <Typography variant="h5" 
+            sx={{
+              textAlign: "center",
+              color: "white",
+              fontFamily: "Roboto, sans-serif",
+              fontWeight: 700,
+              marginBottom: 4,
+              marginTop: 6,
+              fontSize: { xs: "2rem", sm: "3rem", md: "4rem" },
+              textShadow: "2px 2px 8px rgba(0, 0, 0, 0.9)",
+            }}>
+              Histórico de Contribuições
+            </Typography>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleMarcarPresenca}
+              sx={{ minWidth: isMobile ? "100%" : "auto" }}
+            >
               Marcar Presença no Treino
             </Button>
           </Box>
 
           {historicoContribuicoes && Object.entries(historicoContribuicoes).length > 0 ? (
-            <TableContainer component={Paper}>
+            <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 3 }}>
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell>Ano-Mês</TableCell>
-                    <TableCell>Valor Contribuído</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>Ano-Mês</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>Valor Contribuído</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -140,7 +189,9 @@ const HomeParticipante = () => {
               </Table>
             </TableContainer>
           ) : (
-            <Typography variant="body1">Nenhuma contribuição registrada.</Typography>
+            <Typography variant="body1" color="textSecondary">
+              Nenhuma contribuição registrada.
+            </Typography>
           )}
         </>
       ) : (

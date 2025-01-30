@@ -18,6 +18,7 @@ import {
     InputAdornment,
     Modal,
     MenuItem,
+    TableFooter,
 } from "@mui/material";
 import { Search, ArrowBack, Edit, Visibility, CheckCircle, RemoveCircle, Sort, Download } from "@mui/icons-material";
 import { database } from "../firebase";
@@ -31,17 +32,37 @@ const ListarParticipante = () => {
 
     const [participantes, setParticipantes] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
-    const [isSortedAsc, setIsSortedAsc] = useState(true); // Controle da ordenação alfabética
+    const [isSortedAsc, setIsSortedAsc] = useState(true);
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [openDetalhesModal, setOpenDetalhesModal] = useState(false);
-
-
     const [snackbarSeverity, setSnackbarSeverity] = useState("success");
     const [openModal, setOpenModal] = useState(false);
     const [selectedParticipante, setSelectedParticipante] = useState(null);
     const [filtroTurma, setFiltroTurma] = useState("todas");
+
+
+    // Função para calcular o total das contribuições
+    const calcularTotalContribuicoes = () => {
+        let total = 0;
+        participantes.forEach((participante) => {
+            if (participante.contribuicoesMensais) {
+                Object.values(participante.contribuicoesMensais).forEach((contribuicao) => {
+                    total += contribuicao.valor || 0;
+                });
+            }
+        });
+        return total;
+    };
+
+    // Formata o valor para exibir como moeda
+    const formatarMoeda = (valor) => {
+        return new Intl.NumberFormat("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+        }).format(valor);
+    };
 
     const handleOpenModal = (participante) => {
         setSelectedParticipante(participante);
@@ -177,8 +198,8 @@ const ListarParticipante = () => {
 
             const snapshot = await get(participanteRef);
             let updatedData = snapshot.exists()
-                ? { ...snapshot.val(), [currentMonthYear]: { mes: currentMonth, ano: currentYear, valor: 1 } }
-                : { [currentMonthYear]: { mes: currentMonth, ano: currentYear, valor: 1 } };
+                ? { ...snapshot.val(), [currentMonthYear]: { mes: currentMonth, ano: currentYear, valor: 10 } }
+                : { [currentMonthYear]: { mes: currentMonth, ano: currentYear, valor: 10 } };
 
             await update(participanteRef, updatedData);
 
@@ -474,25 +495,30 @@ const ListarParticipante = () => {
                                         <TableCell
                                             align="center"
                                             sx={{
-                                                display: "grid",
-                                                gridTemplateColumns: "repeat(2, 1fr)",
-                                                gap: 1,
+                                                display: "flex", // Usar flexbox para organizar os ícones
+                                                flexDirection: "row", // Ícones em linha
+                                                flexWrap: "wrap", // Permite que os ícones quebrem para a próxima linha se necessário
+                                                gap: 1, // Espaçamento entre os ícones
+                                                justifyContent: "center", // Centraliza os ícones
+                                                alignItems: "center", // Alinha os ícones verticalmente
                                                 [theme => theme.breakpoints.down('sm')]: {
-                                                    gridTemplateColumns: "1fr 1fr",
+                                                    gap: 0.5, // Reduz o espaçamento no mobile
                                                 },
                                             }}
                                         >
                                             <IconButton
                                                 color="primary"
                                                 onClick={() => handleOpenModal(participante)}
+                                                sx={{ fontSize: { xs: "1rem", sm: "1.5rem" } }} // Ajusta o tamanho dos ícones
                                             >
-                                                <Edit sx={{ fontSize: { xs: "1rem", sm: "1.5rem" } }} />
+                                                <Edit />
                                             </IconButton>
                                             <IconButton
                                                 color="secondary"
                                                 onClick={() => handleMarcarInativo(participante.matricula)}
+                                                sx={{ fontSize: { xs: "1rem", sm: "1.5rem" } }}
                                             >
-                                                <RemoveCircle sx={{ fontSize: { xs: "1rem", sm: "1.5rem" } }} />
+                                                <RemoveCircle />
                                             </IconButton>
                                             <Tooltip
                                                 title={
@@ -509,23 +535,34 @@ const ListarParticipante = () => {
                                                         sx={{
                                                             color: pagamentoMesAtual ? "green" : "gray",
                                                             "&.Mui-disabled": { color: "green" },
+                                                            fontSize: { xs: "1rem", sm: "1.5rem" },
                                                         }}
                                                     >
-                                                        <CheckCircle sx={{ fontSize: { xs: "1rem", sm: "1.5rem" } }} />
+                                                        <CheckCircle />
                                                     </IconButton>
                                                 </span>
                                             </Tooltip>
                                             <IconButton
                                                 color="info"
                                                 onClick={() => handleVerDetalhes(participante)}
+                                                sx={{ fontSize: { xs: "1rem", sm: "1.5rem" } }}
                                             >
-                                                <Visibility sx={{ fontSize: { xs: "1rem", sm: "1.5rem" } }} />
+                                                <Visibility />
                                             </IconButton>
                                         </TableCell>
                                     </TableRow>
                                 );
                             })}
+
                     </TableBody>
+                    <TableFooter>
+                        <TableRow>
+                            <TableCell colSpan={3} align="center" sx={{ fontWeight: "bold", fontSize: "1rem" }}>
+                                Total das Contribuições:   {formatarMoeda(calcularTotalContribuicoes())}
+                            </TableCell>
+
+                        </TableRow>
+                    </TableFooter>
                 </Table>
             </TableContainer>
 

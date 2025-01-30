@@ -146,7 +146,7 @@ const HomeAdmin = () => {
             icon={Block}
             label="Participantes Inativos"
             color="error"
-            onClick={() => handleNavigate("/participantes-inativos")}
+            onClick={() => handleNavigate("/listar-inativos")}
           />
         </Box>
       </Box>
