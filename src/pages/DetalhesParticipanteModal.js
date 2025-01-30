@@ -25,7 +25,8 @@ const DetalhesParticipanteModal = ({ open, onClose, participante }) => {
 
   if (!participante) return null;
 
-  const { nome, matricula, dataNascimento, contato, nomeResponsavel, contribuicoesMensais, inativo } = participante;
+  const { nome, matricula, dataNascimento, contato, nomeResponsavel, contribuicoesMensais, inativo, presencas } =
+    participante;
 
   // Transformar objeto de contribuições em um array
   const contribuicoesArray = contribuicoesMensais
@@ -103,6 +104,40 @@ const DetalhesParticipanteModal = ({ open, onClose, participante }) => {
             <strong>Status:</strong> {inativo ? "Inativo" : "Ativo"}
           </Typography>
         </Box>
+
+        {/* Seção de Frequência */}
+        <Typography variant="h6" fontWeight="bold" gutterBottom>
+          Frequência de Treinos
+        </Typography>
+        {presencas && presencas.length > 0 ? (
+          <TableContainer component={Paper} sx={{ mb: 3 }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell><strong>Data</strong></TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {presencas.map((presenca, index) => (
+                  <TableRow
+                    key={index}
+                    sx={{
+                      "&:nth-of-type(odd)": { backgroundColor: "#f9f9f9" },
+                    }}
+                  >
+                    <TableCell>{presenca}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        ) : (
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            Nenhuma presença registrada.
+          </Typography>
+        )}
+
+        {/* Seção de Histórico de Contribuições */}
         <Typography variant="h6" fontWeight="bold" gutterBottom>
           Histórico de Contribuições
         </Typography>
