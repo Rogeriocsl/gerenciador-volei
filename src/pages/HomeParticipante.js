@@ -15,6 +15,11 @@ import {
   Snackbar,
   useMediaQuery,
   useTheme,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Alert,
 } from "@mui/material";
 import { database } from "../firebase";
 import { ref, get, update } from "firebase/database";
@@ -28,10 +33,11 @@ const HomeParticipante = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [participante, setParticipante] = useState(null);
-  const [historicoContribuicoes, setHistoricoContribuicoes] = useState([]);
+  const [historicoContribuicoes, setHistoricoContribuicoes] = useState({});
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const showSnackbar = (message, severity) => {
     setSnackbarMessage(message);
@@ -61,6 +67,10 @@ const HomeParticipante = () => {
   }, [matricula]);
 
   const handleMarcarPresenca = async () => {
+    setDialogOpen(true); // Abre o Dialog ao clicar no botão
+  };
+
+  const confirmarPresenca = async () => {
     const dataAtual = new Date();
     const diaAtual = `${dataAtual.getFullYear()}-${String(dataAtual.getMonth() + 1).padStart(
       2,
@@ -102,12 +112,39 @@ const HomeParticipante = () => {
     } catch (error) {
       console.error("Erro ao marcar presença:", error);
       showSnackbar("Erro ao marcar presença.", "error");
+    } finally {
+      setDialogOpen(false); // Fecha o Dialog após a ação
     }
   };
 
   const handleSnackbarClose = (event, reason) => {
     if (reason === "clickaway") return;
     setSnackbarOpen(false);
+  };
+
+  const gerarMesesDoAno = () => {
+    const meses = [];
+    const anoAtual = new Date().getFullYear();
+
+    for (let mes = 1; mes <= 12; mes++) {
+      const mesFormatado = String(mes).padStart(2, "0"); // Formata o mês com dois dígitos (01, 02, ..., 12)
+      meses.push(`${anoAtual}-${mesFormatado}`);
+    }
+
+    return meses;
+  };
+
+  const verificarContribuicao = (mesAno, historicoContribuicoes) => {
+    return historicoContribuicoes[mesAno] ? "Pago" : "Não Pago";
+  };
+
+  const getNomeMes = (mesAno) => {
+    const [ano, mes] = mesAno.split("-"); // Divide o formato YYYY-MM
+    const meses = [
+      "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+      "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+    ];
+    return `${meses[parseInt(mes) - 1]} ${ano}`; // Retorna o nome do mês e o ano
   };
 
   useEffect(() => {
@@ -126,7 +163,7 @@ const HomeParticipante = () => {
     }} p={isMobile ? 2 : 3}>
       {participante ? (
         <>
-          <Card sx={{ mb: 3, borderRadius: 2, boxShadow: 3 }}>
+          <Card sx={{ mb: 3, height: 300, borderRadius: 2, boxShadow: 3 }}>
             <CardContent>
               <Typography variant="h4" gutterBottom sx={{ fontWeight: "bold" }}>
                 Bem-vindo, {participante.nome}
@@ -135,6 +172,12 @@ const HomeParticipante = () => {
                 Matrícula: {matricula}
               </Typography>
 
+              {/* Aviso de participante inativo */}
+              {participante.inativo && (
+                <Alert severity="error" sx={{ mt: 2 }}>
+                  Você não é um participante ativo.
+                </Alert>
+              )}
             </CardContent>
           </Card>
 
@@ -146,17 +189,17 @@ const HomeParticipante = () => {
             mb={3}
             gap={2}
           >
-            <Typography variant="h5" 
-            sx={{
-              textAlign: "center",
-              color: "white",
-              fontFamily: "Roboto, sans-serif",
-              fontWeight: 700,
-              marginBottom: 4,
-              marginTop: 6,
-              fontSize: { xs: "2rem", sm: "3rem", md: "4rem" },
-              textShadow: "2px 2px 8px rgba(0, 0, 0, 0.9)",
-            }}>
+            <Typography variant="h7"
+              sx={{
+                textAlign: "center",
+                color: "white",
+                fontFamily: "Roboto, sans-serif",
+                fontWeight: 700,
+                marginBottom: 4,
+                marginTop: 6,
+                fontSize: { xs: "2rem", sm: "3rem", md: "4rem" },
+                textShadow: "2px 2px 8px rgba(0, 0, 0, 0.9)",
+              }}>
               Histórico de Contribuições
             </Typography>
             <Button
@@ -164,39 +207,71 @@ const HomeParticipante = () => {
               color="primary"
               onClick={handleMarcarPresenca}
               sx={{ minWidth: isMobile ? "100%" : "auto" }}
+              disabled={participante.inativo} // Desabilita o botão se o participante estiver inativo
             >
               Marcar Presença no Treino
             </Button>
           </Box>
 
-          {historicoContribuicoes && Object.entries(historicoContribuicoes).length > 0 ? (
-            <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 3 }}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell sx={{ fontWeight: "bold" }}>Ano-Mês</TableCell>
-                    <TableCell sx={{ fontWeight: "bold" }}>Valor Contribuído</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {Object.entries(historicoContribuicoes).map(([mesAno, contrib]) => (
+          <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 3 }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: "bold" }}>Mês</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Status</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {gerarMesesDoAno().map((mesAno) => {
+                  const status = verificarContribuicao(mesAno, historicoContribuicoes);
+                  return (
                     <TableRow key={mesAno}>
-                      <TableCell>{mesAno}</TableCell>
-                      <TableCell>R$ {contrib.valor.toFixed(2)}</TableCell>
+                      <TableCell>{getNomeMes(mesAno)}</TableCell>
+                      <TableCell
+                        sx={{
+                          height: "20px",
+                          width:"150px", // Altura fixa
+                          backgroundColor: status === "Pago" ? "#4caf50" : "#f44336", // Verde para "Pago", vermelho para "Não Pago"
+                          color: "white", // Texto branco para melhor contraste
+                          fontWeight: "bold", // Texto em negrito
+                          borderRadius: "8px", // Bordas arredondadas
+                          boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)", // Sombra sutil
+                          transition: "background-color 0.3s ease", // Transição suave
+                          textAlign: "center", // Centraliza o texto horizontalmente
+                          padding: "8px 16px", // Espaçamento interno
+                          "&:hover": {
+                            backgroundColor: status === "Pago" ? "#388e3c" : "#d32f2f", // Tons mais escuros ao passar o mouse
+                          },
+                        }}
+                      >
+                        {status}
+                      </TableCell>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          ) : (
-            <Typography variant="body1" color="textSecondary">
-              Nenhuma contribuição registrada.
-            </Typography>
-          )}
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </TableContainer>
         </>
       ) : (
         <Typography variant="body1">Carregando informações...</Typography>
       )}
+
+      {/* Dialog de confirmação */}
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
+        <DialogTitle>Confirmação de Presença</DialogTitle>
+        <DialogContent>
+          <Typography>Você participou do treino hoje?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDialogOpen(false)} color="secondary">
+            Não
+          </Button>
+          <Button onClick={confirmarPresenca} color="primary" autoFocus>
+            Sim
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Snackbar
         open={snackbarOpen}

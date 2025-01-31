@@ -53,13 +53,6 @@ const RegistrarParticipante = () => {
                 turma, // Adiciona a turma selecionada
                 matricula,
                 inativo: false,
-                contribuiçõesMensais: [
-                    {
-                        mes: dataCriacao.getMonth() + 1,
-                        ano: dataCriacao.getFullYear(),
-                        valor: 0,
-                    },
-                ],
                 dataCriacao,
             });
 
@@ -218,8 +211,8 @@ const RegistrarParticipante = () => {
                             onChange={(e) => setTurma(e.target.value)}
                             label="Turma"
                         >
-                            <MenuItem value="Terça-feira">Terça-feira</MenuItem>
-                            <MenuItem value="Quinta-feira">Quinta-feira</MenuItem>
+                            <MenuItem value="Terça-Feira">Terça-feira</MenuItem>
+                            <MenuItem value="Quinta-Feira">Quinta-feira</MenuItem>
                         </Select>
                     </FormControl>
 

@@ -46,13 +46,18 @@ const ListarParticipante = () => {
     // Função para calcular o total das contribuições
     const calcularTotalContribuicoes = () => {
         let total = 0;
+        const currentMonthYear = new Date().toISOString().slice(0, 7); // Obtém o mês atual no formato "YYYY-MM"
+
         participantes.forEach((participante) => {
             if (participante.contribuicoesMensais) {
-                Object.values(participante.contribuicoesMensais).forEach((contribuicao) => {
-                    total += contribuicao.valor || 0;
-                });
+                // Filtra as contribuições pelo mês atual
+                const contribuicaoMesAtual = participante.contribuicoesMensais[currentMonthYear];
+                if (contribuicaoMesAtual) {
+                    total += contribuicaoMesAtual.valor || 0;
+                }
             }
         });
+
         return total;
     };
 
@@ -65,7 +70,11 @@ const ListarParticipante = () => {
     };
 
     const handleOpenModal = (participante) => {
-        setSelectedParticipante(participante);
+        console.log("Participante selecionado:", participante); // Verifique se `turma` está presente
+        setSelectedParticipante({
+            ...participante,
+            turma: participante.turma || "", // Garante que `turma` tenha um valor padrão
+        });
         setOpenModal(true);
     };
 
@@ -111,8 +120,7 @@ const ListarParticipante = () => {
             handleSnackbarOpen("Contribuiçao removida com sucesso!"); // Mostra o feedback
             setSnackbarSeverity("success");
             setOpenSnackbar(true);
-            console.log(openSnackbar, "?") // Confirme se isso é chamado
-            // handleCloseModal(); // Fecha o modal
+            handleCloseModal(); // Fecha o modal
 
             // Atualiza a lista de participantes após a remoção
             await fetchParticipantes();
@@ -159,6 +167,7 @@ const ListarParticipante = () => {
 
                 setParticipantes(participantesComStatus);
             }
+            console.log(participantes)
         } catch (error) {
             console.error("Erro ao carregar participantes:", error);
         }
@@ -558,9 +567,8 @@ const ListarParticipante = () => {
                     <TableFooter>
                         <TableRow>
                             <TableCell colSpan={3} align="center" sx={{ fontWeight: "bold", fontSize: "1rem" }}>
-                                Total das Contribuições:   {formatarMoeda(calcularTotalContribuicoes())}
+                                Total das Contribuições do Mês: {formatarMoeda(calcularTotalContribuicoes())}
                             </TableCell>
-
                         </TableRow>
                     </TableFooter>
                 </Table>
@@ -591,7 +599,6 @@ const ListarParticipante = () => {
                                 }
                                 margin="normal"
                             />
-
                             <TextField
                                 fullWidth
                                 label="Nome Responsavel"
@@ -610,35 +617,53 @@ const ListarParticipante = () => {
                                 }
                                 margin="normal"
                             />
-
+                            <TextField
+                                fullWidth
+                                label="Data de Nascimento"
+                                type="date"
+                                value={selectedParticipante.dataNascimento || ""}
+                                onChange={(e) =>
+                                    setSelectedParticipante((prev) => ({ ...prev, dataNascimento: e.target.value }))
+                                }
+                                margin="normal"
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
+                            />
+                            <TextField
+                                fullWidth
+                                select
+                                label="Turma"
+                                value={selectedParticipante.turma || ""} // Valor padrão para evitar campos vazios
+                                onChange={(e) =>
+                                    setSelectedParticipante((prev) => ({ ...prev, turma: e.target.value }))
+                                }
+                                margin="normal"
+                            >
+                                <MenuItem value="Terça-Feira">Terça-Feira</MenuItem>
+                                <MenuItem value="Quinta-Feira">Quinta-Feira</MenuItem>
+                            </TextField>
                             <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2, direction: "row" }}>
                                 <Button
                                     variant="outlined"
                                     color="error"
                                     onClick={() => {
-                                        const currentMonth = new Date().getMonth() + 1; // mês começa de 0, então somamos 1
+                                        const currentMonth = new Date().getMonth() + 1;
                                         const currentYear = new Date().getFullYear();
                                         const currentMonthYear = `${currentYear}-${String(currentMonth).padStart(2, "0")}`;
-
-                                        // Agora chama a função de remoção passando o currentMonthYear
                                         handleRemoverPagamento(selectedParticipante.matricula, currentMonthYear);
                                     }}
                                 >
                                     Remover Contribuição Mensal
                                 </Button>
-
-
-
                                 <Button variant="contained" color="primary" onClick={handleEditParticipante}>
                                     Salvar
                                 </Button>
                             </Box>
-
                         </>
                     )}
                 </Box>
-            </Modal >
-
+            </Modal>
 
             <Snackbar
                 open={snackbarOpen}
