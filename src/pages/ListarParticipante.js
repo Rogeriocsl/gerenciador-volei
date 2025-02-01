@@ -212,10 +212,19 @@ const ListarParticipante = () => {
 
             await update(participanteRef, updatedData);
 
+            // Atualiza o estado `pagamentoFeito` para o participante específico
+            setParticipantes((prev) =>
+                prev.map((participante) =>
+                    participante.matricula === matricula
+                        ? { ...participante, pagamentoFeito: true }
+                        : participante
+                )
+            );
+
+            // Feedback para o usuário
             setSnackbarMessage("Contribuição registrada com sucesso.");
             setSnackbarSeverity("success");
             setOpenSnackbar(true);
-            fetchParticipantes();
         } catch (error) {
             console.error("Erro ao registrar Contribuição:", error);
             setSnackbarMessage("Erro ao registrar Contribuição.");
@@ -540,9 +549,9 @@ const ListarParticipante = () => {
                                                 <span>
                                                     <IconButton
                                                         onClick={() => handleRegistrarPagamento(participante.matricula)}
-                                                        disabled={pagamentoMesAtual}
+                                                        disabled={participante.pagamentoFeito}
                                                         sx={{
-                                                            color: pagamentoMesAtual ? "green" : "gray",
+                                                            color: participante.pagamentoFeito ? "green" : "gray",
                                                             "&.Mui-disabled": { color: "green" },
                                                             fontSize: { xs: "1rem", sm: "1.5rem" },
                                                         }}
