@@ -540,7 +540,7 @@ const ListarParticipante = () => {
                                             </IconButton>
                                             <Tooltip
                                                 title={
-                                                    pagamentoMesAtual
+                                                    participante.pagamentoFeito
                                                         ? "Contribuição mensal já realizada."
                                                         : "Registrar contribuição mensal"
                                                 }
