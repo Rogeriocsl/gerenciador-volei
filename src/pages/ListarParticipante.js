@@ -41,7 +41,8 @@ const ListarParticipante = () => {
     const [openModal, setOpenModal] = useState(false);
     const [selectedParticipante, setSelectedParticipante] = useState(null);
     const [filtroTurma, setFiltroTurma] = useState("todas");
-
+    const [mesAnoContribuicao, setMesAnoContribuicao] = useState("");
+    const [valorContribuicao, setValorContribuicao] = useState(10);
 
     // Função para calcular o total das contribuições
     const calcularTotalContribuicoes = () => {
@@ -197,6 +198,52 @@ const ListarParticipante = () => {
         }
     };
 
+    const handleRegistrarContribuicaoManual = async () => {
+        if (!selectedParticipante || !mesAnoContribuicao) {
+            handleSnackbarOpen("Selecione o mês/ano para registrar a contribuição.", "error");
+            return;
+        }
+
+        try {
+            // Extrai o ano e o mês do campo mesAnoContribuicao (formato YYYY-MM)
+            const [ano, mes] = mesAnoContribuicao.split("-");
+
+            // Cria o objeto da contribuição com valor fixo de R$ 10,00
+            const novaContribuicao = {
+                ano: parseInt(ano, 10),
+                mes: parseInt(mes, 10),
+                valor: 10, // Valor fixo
+            };
+
+            // Referência para as contribuições do participante
+            const contribuicoesRef = ref(
+                database,
+                `participantes/${selectedParticipante.matricula}/contribuicoesMensais/${mesAnoContribuicao}`
+            );
+
+            // Atualiza o Firebase com a nova contribuição
+            await update(contribuicoesRef, novaContribuicao);
+
+            // Atualiza o estado local do participante
+            setSelectedParticipante((prev) => ({
+                ...prev,
+                contribuicoesMensais: {
+                    ...prev.contribuicoesMensais,
+                    [mesAnoContribuicao]: novaContribuicao,
+                },
+            }));
+
+            // Limpa o campo do mês/ano após o registro
+            setMesAnoContribuicao("");
+
+            // Feedback para o usuário
+            handleSnackbarOpen("Contribuição registrada com sucesso!", "success");
+            handleCloseModal();
+        } catch (error) {
+            console.error("Erro ao registrar contribuição manual:", error);
+            handleSnackbarOpen("Erro ao registrar contribuição manual.", "error");
+        }
+    };
 
     const handleRegistrarPagamento = async (matricula) => {
         const participanteRef = ref(database, `participantes/${matricula}/contribuicoesMensais`);
@@ -259,7 +306,6 @@ const ListarParticipante = () => {
         }
         setSnackbarOpen(false); // Fecha o Snackbar
     };
-
 
 
     useEffect(() => {
@@ -584,78 +630,107 @@ const ListarParticipante = () => {
             </TableContainer>
 
 
-
             <Modal open={openModal} onClose={handleCloseModal}>
-                <Box sx={{ position: "absolute", top: "50%", left: "50%", textAlign: "center", transform: "translate(-50%, -50%)", bgcolor: "background.paper", p: 4, boxShadow: 24 }}>
-                    <Typography variant="h6" mb={2}>Editar Participante</Typography>
+                <Box
+                    sx={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        bgcolor: "background.paper",
+                        p: 3,
+                        boxShadow: 24,
+                        width: "90%",
+                        maxWidth: 500,
+                        maxHeight: "80vh",
+                        overflowY: "auto",
+                        borderRadius: 2,
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 2,
+                    }}
+                >
+                    <Typography variant="h6" textAlign="center">Editar Participante</Typography>
+
                     {selectedParticipante && (
                         <>
+                            <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2 }}>
+                                <TextField
+                                    fullWidth
+                                    label="Nome"
+                                    value={selectedParticipante.nome || ""}
+                                    onChange={(e) =>
+                                        setSelectedParticipante((prev) => ({ ...prev, nome: e.target.value }))
+                                    }
+                                />
+                                <TextField
+                                    fullWidth
+                                    label="Contato"
+                                    value={selectedParticipante.contato || ""}
+                                    onChange={(e) =>
+                                        setSelectedParticipante((prev) => ({ ...prev, contato: e.target.value }))
+                                    }
+                                />
+                            </Box>
+
+                            <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2 }}>
+                                <TextField
+                                    fullWidth
+                                    label="Nome Responsável"
+                                    value={selectedParticipante.nomeResponsavel || ""}
+                                    onChange={(e) =>
+                                        setSelectedParticipante((prev) => ({ ...prev, nomeResponsavel: e.target.value }))
+                                    }
+                                />
+                                <TextField
+                                    fullWidth
+                                    label="Contato Responsável"
+                                    value={selectedParticipante.contatoResponsavel || ""}
+                                    onChange={(e) =>
+                                        setSelectedParticipante((prev) => ({ ...prev, contatoResponsavel: e.target.value }))
+                                    }
+                                />
+                            </Box>
+
+                            <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2 }}>
+                                <TextField
+                                    fullWidth
+                                    label="Data de Nascimento"
+                                    type="date"
+                                    value={selectedParticipante.dataNascimento || ""}
+                                    onChange={(e) =>
+                                        setSelectedParticipante((prev) => ({ ...prev, dataNascimento: e.target.value }))
+                                    }
+                                    InputLabelProps={{ shrink: true }}
+                                />
+                                <TextField
+                                    fullWidth
+                                    select
+                                    label="Turma"
+                                    value={selectedParticipante.turma || ""}
+                                    onChange={(e) =>
+                                        setSelectedParticipante((prev) => ({ ...prev, turma: e.target.value }))
+                                    }
+                                >
+                                    <MenuItem value="Terça-Feira">Terça-Feira</MenuItem>
+                                    <MenuItem value="Quinta-Feira">Quinta-Feira</MenuItem>
+                                </TextField>
+                            </Box>
+
                             <TextField
                                 fullWidth
-                                label="Nome"
-                                value={selectedParticipante.nome || ""}
-                                onChange={(e) =>
-                                    setSelectedParticipante((prev) => ({ ...prev, nome: e.target.value }))
-                                }
-                                margin="normal"
+                                label="Mês/Ano da Contribuição"
+                                type="month"
+                                value={mesAnoContribuicao}
+                                onChange={(e) => setMesAnoContribuicao(e.target.value)}
+                                InputLabelProps={{ shrink: true }}
                             />
-                            <TextField
-                                fullWidth
-                                label="Contato"
-                                value={selectedParticipante.contato || ""}
-                                onChange={(e) =>
-                                    setSelectedParticipante((prev) => ({ ...prev, contato: e.target.value }))
-                                }
-                                margin="normal"
-                            />
-                            <TextField
-                                fullWidth
-                                label="Nome Responsavel"
-                                value={selectedParticipante.nomeResponsavel || ""}
-                                onChange={(e) =>
-                                    setSelectedParticipante((prev) => ({ ...prev, nomeResponsavel: e.target.value }))
-                                }
-                                margin="normal"
-                            />
-                            <TextField
-                                fullWidth
-                                label="Contato Responsavel"
-                                value={selectedParticipante.contatoResponsavel || ""}
-                                onChange={(e) =>
-                                    setSelectedParticipante((prev) => ({ ...prev, contatoResponsavel: e.target.value }))
-                                }
-                                margin="normal"
-                            />
-                            <TextField
-                                fullWidth
-                                label="Data de Nascimento"
-                                type="date"
-                                value={selectedParticipante.dataNascimento || ""}
-                                onChange={(e) =>
-                                    setSelectedParticipante((prev) => ({ ...prev, dataNascimento: e.target.value }))
-                                }
-                                margin="normal"
-                                InputLabelProps={{
-                                    shrink: true,
-                                }}
-                            />
-                            <TextField
-                                fullWidth
-                                select
-                                label="Turma"
-                                value={selectedParticipante.turma || ""} // Valor padrão para evitar campos vazios
-                                onChange={(e) =>
-                                    setSelectedParticipante((prev) => ({ ...prev, turma: e.target.value }))
-                                }
-                                margin="normal"
-                            >
-                                <MenuItem value="Terça-Feira">Terça-Feira</MenuItem>
-                                <MenuItem value="Quinta-Feira">Quinta-Feira</MenuItem>
-                            </TextField>
-                            <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2, direction: "row" }}>
+
+                            <Box sx={{ display: "flex", flexDirection: "row", justifyContent: "space-between", gap: 2, mt: 2 }}>
                                 <Button
                                     variant="outlined"
                                     color="error"
+                                    fullWidth
                                     onClick={() => {
                                         const currentMonth = new Date().getMonth() + 1;
                                         const currentYear = new Date().getFullYear();
@@ -663,9 +738,14 @@ const ListarParticipante = () => {
                                         handleRemoverPagamento(selectedParticipante.matricula, currentMonthYear);
                                     }}
                                 >
-                                    Remover Contribuição Mensal
+                                    Remover Contribuição
                                 </Button>
-                                <Button variant="contained" color="primary" onClick={handleEditParticipante}>
+
+                                <Button variant="contained" color="secondary" fullWidth onClick={handleRegistrarContribuicaoManual}>
+                                    Registrar Contribuição
+                                </Button>
+
+                                <Button variant="contained" color="primary" fullWidth onClick={handleEditParticipante}>
                                     Salvar
                                 </Button>
                             </Box>

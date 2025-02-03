@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/gerenciador-volei/static/css/main.b2ddece4.css",
-    "main.js": "/gerenciador-volei/static/js/main.8b2ec09c.js",
+    "main.js": "/gerenciador-volei/static/js/main.81bd73b1.js",
     "static/media/background.png": "/gerenciador-volei/static/media/background.35432dc74a38ebba8a49.png",
     "static/media/bola.png": "/gerenciador-volei/static/media/bola.941ca9908a2d53ca2b5b.png",
     "static/media/roboto-latin-400-normal.woff2": "/gerenciador-volei/static/media/roboto-latin-400-normal.297d48e1b5a10c0831a9.woff2",
@@ -20,10 +20,10 @@
     "static/media/roboto-greek-ext-400-normal.woff": "/gerenciador-volei/static/media/roboto-greek-ext-400-normal.16eb83b4a3b1ea994243.woff",
     "index.html": "/gerenciador-volei/index.html",
     "main.b2ddece4.css.map": "/gerenciador-volei/static/css/main.b2ddece4.css.map",
-    "main.8b2ec09c.js.map": "/gerenciador-volei/static/js/main.8b2ec09c.js.map"
+    "main.81bd73b1.js.map": "/gerenciador-volei/static/js/main.81bd73b1.js.map"
   },
   "entrypoints": [
     "static/css/main.b2ddece4.css",
-    "static/js/main.8b2ec09c.js"
+    "static/js/main.81bd73b1.js"
   ]
 }
