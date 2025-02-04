@@ -13,10 +13,15 @@ import {
     IconButton,
     Paper,
     Snackbar,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogContentText,
+    DialogTitle,
 } from "@mui/material";
-import { ArrowBack, CheckCircle } from "@mui/icons-material";
+import { ArrowBack, CheckCircle, Delete } from "@mui/icons-material";
 import { database } from "../firebase";
-import { ref, get, update } from "firebase/database";
+import { ref, get, update, remove } from "firebase/database";
 import backgroundImage from "../assets/background.png";
 
 const ListarInativos = () => {
@@ -26,15 +31,16 @@ const ListarInativos = () => {
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [selectedMatricula, setSelectedMatricula] = useState(null);
 
-    // Busca os participantes inativos
     const fetchParticipantesInativos = async () => {
         try {
             const snapshot = await get(ref(database, "participantes"));
             if (snapshot.exists()) {
                 const data = snapshot.val();
                 const inativos = Object.entries(data)
-                    .filter(([_, participante]) => participante.inativo) // Filtra apenas os inativos
+                    .filter(([_, participante]) => participante.inativo)
                     .map(([matricula, participante]) => ({
                         matricula,
                         ...participante,
@@ -46,7 +52,6 @@ const ListarInativos = () => {
         }
     };
 
-    // Reativa um participante
     const handleReativarParticipante = async (matricula) => {
         const participanteRef = ref(database, `participantes/${matricula}`);
         try {
@@ -54,7 +59,7 @@ const ListarInativos = () => {
             setSnackbarMessage("Participante reativado com sucesso!");
             setSnackbarSeverity("success");
             setSnackbarOpen(true);
-            fetchParticipantesInativos(); // Atualiza a lista após reativar
+            fetchParticipantesInativos();
         } catch (error) {
             console.error("Erro ao reativar participante:", error);
             setSnackbarMessage("Erro ao reativar participante.");
@@ -63,7 +68,28 @@ const ListarInativos = () => {
         }
     };
 
-    // Fecha o Snackbar
+    const handleDeleteClick = (matricula) => {
+        setSelectedMatricula(matricula);
+        setDialogOpen(true);
+    };
+
+    const handleDeleteConfirm = async () => {
+        if (selectedMatricula) {
+            try {
+                await remove(ref(database, `participantes/${selectedMatricula}`));
+                setSnackbarMessage("Participante excluído com sucesso!");
+                setSnackbarSeverity("success");
+                fetchParticipantesInativos();
+            } catch (error) {
+                setSnackbarMessage("Erro ao excluir participante.");
+                setSnackbarSeverity("error");
+            }
+            setSnackbarOpen(true);
+            setDialogOpen(false);
+            setSelectedMatricula(null);
+        }
+    };
+
     const handleSnackbarClose = (event, reason) => {
         if (reason === "clickaway") return;
         setSnackbarOpen(false);
@@ -86,7 +112,6 @@ const ListarInativos = () => {
                 padding: { xs: 1, sm: 2 },
             }}
         >
-            {/* Botão de Voltar */}
             <Button
                 onClick={() => navigate("/home-administrativo")}
                 sx={{
@@ -102,13 +127,11 @@ const ListarInativos = () => {
                 <ArrowBack sx={{ fontSize: 30, color: "white" }} />
             </Button>
 
-            {/* Título da Página */}
             <Typography
                 variant="h4"
                 sx={{
                     textAlign: "center",
                     color: "white",
-                    fontFamily: "Roboto, sans-serif",
                     fontWeight: 700,
                     marginBottom: 4,
                     marginTop: 6,
@@ -119,54 +142,26 @@ const ListarInativos = () => {
                 Participantes Inativos
             </Typography>
 
-            {/* Tabela de Participantes Inativos */}
-            <TableContainer
-                component={Paper}
-                sx={{
-                    overflowX: "auto",
-                    backgroundColor: "rgba(245, 247, 250, 1)",
-                    borderRadius: 3,
-                    maxWidth: "100%",
-                    margin: "auto",
-                    height: { xs: "auto", sm: "620px" },
-                    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                }}
-            >
-                <Table sx={{ width: "100%" }}>
+            <TableContainer component={Paper} sx={{ overflowX: "auto", borderRadius: 3, maxWidth: "100%", margin: "auto", height: { xs: "auto", sm: "620px" } }}>
+                <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell sx={{ fontWeight: "bold", backgroundColor: "#1976d2", color: "white", textAlign: "center" }}>
-                                Matrícula
-                            </TableCell>
-                            <TableCell sx={{ fontWeight: "bold", backgroundColor: "#1976d2", color: "white", textAlign: "center" }}>
-                                Nome
-                            </TableCell>
-                            <TableCell sx={{ fontWeight: "bold", backgroundColor: "#1976d2", color: "white", textAlign: "center" }}>
-                                Ações
-                            </TableCell>
+                            <TableCell>Matrícula</TableCell>
+                            <TableCell>Nome</TableCell>
+                            <TableCell>Ações</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {participantesInativos.map((participante) => (
-                            <TableRow
-                                key={participante.matricula}
-                                sx={{
-                                    "&:nth-of-type(odd)": {
-                                        backgroundColor: "#f9f9f9",
-                                    },
-                                    "&:hover": {
-                                        backgroundColor: "#f1f1f1",
-                                    },
-                                }}
-                            >
+                            <TableRow key={participante.matricula}>
                                 <TableCell align="center">{participante.matricula}</TableCell>
                                 <TableCell align="center">{participante.nome}</TableCell>
                                 <TableCell align="center">
-                                    <IconButton
-                                        color="primary"
-                                        onClick={() => handleReativarParticipante(participante.matricula)}
-                                    >
+                                    <IconButton color="primary" onClick={() => handleReativarParticipante(participante.matricula)}>
                                         <CheckCircle />
+                                    </IconButton>
+                                    <IconButton color="error" onClick={() => handleDeleteClick(participante.matricula)}>
+                                        <Delete />
                                     </IconButton>
                                 </TableCell>
                             </TableRow>
@@ -175,17 +170,18 @@ const ListarInativos = () => {
                 </Table>
             </TableContainer>
 
-            {/* Snackbar para Feedback */}
-            <Snackbar
-                open={snackbarOpen}
-                autoHideDuration={6000}
-                onClose={handleSnackbarClose}
-                anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-                message={snackbarMessage}
-                ContentProps={{
-                    style: { backgroundColor: snackbarSeverity === "success" ? "green" : "red" },
-                }}
-            />
+            <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
+                <DialogTitle>Confirmar Exclusão</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>Tem certeza que deseja excluir este participante?</DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setDialogOpen(false)}>Cancelar</Button>
+                    <Button onClick={handleDeleteConfirm} color="error">Excluir</Button>
+                </DialogActions>
+            </Dialog>
+
+            <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose} message={snackbarMessage} />
         </Box>
     );
 };

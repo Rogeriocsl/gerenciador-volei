@@ -103,7 +103,7 @@ const ListarParticipante = () => {
             handleSnackbarOpen("Erro ao atualizar participante. Tente novamente.");
         }
     };
-
+/*
     const handleRemoverPagamento = async (matricula, mesAno) => {
         if (!matricula || !mesAno) {
             console.log("Matrícula ou Mês/Ano inválido.");
@@ -132,7 +132,32 @@ const ListarParticipante = () => {
             setOpenSnackbar(true);  // Confirme se isso é chamado
         }
     };
+*/
 
+const handleRemoverPagamento = async (matricula, mesAno) => {
+    if (!matricula || !mesAno) {
+        handleSnackbarOpen("Matrícula ou Mês/Ano inválido.", "error");
+        return;
+    }
+
+    try {
+        const participanteRef = ref(database, `participantes/${matricula}/contribuicoesMensais/${mesAno}`);
+        await remove(participanteRef);
+
+        // Atualiza o estado local do participante
+        setSelectedParticipante((prev) => {
+            const novasContribuicoes = { ...prev.contribuicoesMensais };
+            delete novasContribuicoes[mesAno];
+            return { ...prev, contribuicoesMensais: novasContribuicoes };
+        });
+
+        // Feedback de sucesso
+        handleSnackbarOpen("Contribuição removida com sucesso!", "success");
+    } catch (error) {
+        console.error("Erro ao remover contribuição:", error);
+        handleSnackbarOpen("Erro ao remover contribuição. Tente novamente.", "error");
+    }
+};
     const handleExportToCSV = () => {
         const header = "Nome,Matrícula\n";
         const rows = participantes
@@ -629,7 +654,7 @@ const ListarParticipante = () => {
                 </Table>
             </TableContainer>
 
-
+{/*
             <Modal open={openModal} onClose={handleCloseModal}>
                 <Box
                     sx={{
@@ -753,7 +778,138 @@ const ListarParticipante = () => {
                     )}
                 </Box>
             </Modal>
+*/}
 
+<Modal open={openModal} onClose={handleCloseModal}>
+    <Box
+        sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            bgcolor: "background.paper",
+            p: 3,
+            boxShadow: 24,
+            width: "90%",
+            maxWidth: 500,
+            maxHeight: "80vh",
+            overflowY: "auto",
+            borderRadius: 2,
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+        }}
+    >
+        <Typography variant="h6" textAlign="center">Editar Participante</Typography>
+
+        {selectedParticipante && (
+            <>
+                {/* Campos de edição do participante */}
+                <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2 }}>
+                    <TextField
+                        fullWidth
+                        label="Nome"
+                        value={selectedParticipante.nome || ""}
+                        onChange={(e) =>
+                            setSelectedParticipante((prev) => ({ ...prev, nome: e.target.value }))
+                        }
+                    />
+                    <TextField
+                        fullWidth
+                        label="Contato"
+                        value={selectedParticipante.contato || ""}
+                        onChange={(e) =>
+                            setSelectedParticipante((prev) => ({ ...prev, contato: e.target.value }))
+                        }
+                    />
+                </Box>
+
+                <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2 }}>
+                    <TextField
+                        fullWidth
+                        label="Nome Responsável"
+                        value={selectedParticipante.nomeResponsavel || ""}
+                        onChange={(e) =>
+                            setSelectedParticipante((prev) => ({ ...prev, nomeResponsavel: e.target.value }))
+                        }
+                    />
+                    <TextField
+                        fullWidth
+                        label="Contato Responsável"
+                        value={selectedParticipante.contatoResponsavel || ""}
+                        onChange={(e) =>
+                            setSelectedParticipante((prev) => ({ ...prev, contatoResponsavel: e.target.value }))
+                        }
+                    />
+                </Box>
+
+                <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2 }}>
+                    <TextField
+                        fullWidth
+                        label="Data de Nascimento"
+                        type="date"
+                        value={selectedParticipante.dataNascimento || ""}
+                        onChange={(e) =>
+                            setSelectedParticipante((prev) => ({ ...prev, dataNascimento: e.target.value }))
+                        }
+                        InputLabelProps={{ shrink: true }}
+                    />
+                    <TextField
+                        fullWidth
+                        select
+                        label="Turma"
+                        value={selectedParticipante.turma || ""}
+                        onChange={(e) =>
+                            setSelectedParticipante((prev) => ({ ...prev, turma: e.target.value }))
+                        }
+                    >
+                        <MenuItem value="Terça-Feira">Terça-Feira</MenuItem>
+                        <MenuItem value="Quinta-Feira">Quinta-Feira</MenuItem>
+                    </TextField>
+                </Box>
+
+                {/* Campo para selecionar o mês/ano da contribuição */}
+                <TextField
+                    fullWidth
+                    label="Selecione o Mês/Ano da Contribuição"
+                    type="month"
+                    value={mesAnoContribuicao}
+                    onChange={(e) => setMesAnoContribuicao(e.target.value)}
+                    InputLabelProps={{ shrink: true }}
+                />
+
+                {/* Botões de ação */}
+                <Box sx={{ display: "flex", flexDirection: "row", justifyContent: "space-between", gap: 2, mt: 2 }}>
+                    {/* Botão para remover a contribuição selecionada */}
+                    <Button
+                        variant="outlined"
+                        color="error"
+                        fullWidth
+                        onClick={() => {
+                            if (!mesAnoContribuicao) {
+                                handleSnackbarOpen("Selecione um mês/ano para remover a contribuição.", "error");
+                                return;
+                            }
+                            handleRemoverPagamento(selectedParticipante.matricula, mesAnoContribuicao);
+                        }}
+                    >
+                        Remover Contribuição
+                    </Button>
+
+                    {/* Botão para registrar uma nova contribuição */}
+                    <Button variant="contained" color="secondary" fullWidth onClick={handleRegistrarContribuicaoManual}>
+                        Registrar Contribuição
+                    </Button>
+
+                    {/* Botão para salvar as alterações */}
+                    <Button variant="contained" color="primary" fullWidth onClick={handleEditParticipante}>
+                        Salvar
+                    </Button>
+                </Box>
+            </>
+        )}
+    </Box>
+</Modal>
             <Snackbar
                 open={snackbarOpen}
                 autoHideDuration={6000} // Fecha automaticamente após 6 segundos

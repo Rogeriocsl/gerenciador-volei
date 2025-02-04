@@ -152,34 +152,73 @@ const HomeParticipante = () => {
   }, [fetchParticipante]);
 
   return (
-    <Box sx={{
-      height: "100vh",
-      display: "flex",
-      flexDirection: "column",
-      backgroundImage: `url(${backgroundImage})`,
-      backgroundSize: "cover",
-      backgroundPosition: "center",
-      backgroundRepeat: "no-repeat",
-    }} p={isMobile ? 2 : 3}>
+    <Box
+      sx={{
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        backgroundImage: `url(${backgroundImage})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
+      p={isMobile ? 2 : 3}
+    >
       {participante ? (
         <>
-          <Card sx={{ mb: 3, height: 300, borderRadius: 2, boxShadow: 3 }}>
-            <CardContent>
-              <Typography variant="h4" gutterBottom sx={{ fontWeight: "bold" }}>
+          <Card
+            sx={{
+              mb: { xs: 2, md: 3 },
+              height: { xs: 400, md: 300 },
+              borderRadius: 3,
+              boxShadow: 4,
+              p: { xs: 2, md: 3 },
+              background: "rgba(255, 255, 255, 0.9)",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <CardContent sx={{ textAlign: "center" }}>
+              <Typography
+                variant="h4"
+                component="h2"
+                gutterBottom
+                sx={{
+                  fontWeight: "bold",
+                  fontSize: { xs: "1.8rem", md: "2.5rem" },
+                }}
+              >
                 Bem-vindo, {participante.nome}
               </Typography>
-              <Typography variant="subtitle1" color="textSecondary">
+              <Typography
+                variant="subtitle1"
+                color="textSecondary"
+                sx={{ mb: 2, fontSize: { xs: "1rem", md: "1.2rem" } }}
+              >
                 Matrícula: {matricula}
               </Typography>
 
-              {/* Aviso de participante inativo */}
-              {participante.inativo && (
-                <Alert severity="error" sx={{ mt: 2 }}>
+              {/* Exibe mensagem de participante inativo ou ativo */}
+              {participante.inativo ? (
+                <Alert
+                  severity="error"
+                  sx={{ mt: 2, width: "100%", maxWidth: 400, mx: "auto" }}
+                >
                   Você não é um participante ativo.
+                </Alert>
+              ) : (
+                <Alert
+                  severity="success"
+                  sx={{ mt: 2, width: "100%", maxWidth: 400, mx: "auto" }}
+                >
+                  Você é um participante ativo.
                 </Alert>
               )}
             </CardContent>
           </Card>
+
 
           <Box
             display="flex"
@@ -189,7 +228,8 @@ const HomeParticipante = () => {
             mb={3}
             gap={2}
           >
-            <Typography variant="h7"
+            <Typography
+              variant="h7"
               sx={{
                 textAlign: "center",
                 color: "white",
@@ -199,7 +239,8 @@ const HomeParticipante = () => {
                 marginTop: 6,
                 fontSize: { xs: "2rem", sm: "3rem", md: "4rem" },
                 textShadow: "2px 2px 8px rgba(0, 0, 0, 0.9)",
-              }}>
+              }}
+            >
               Histórico de Contribuições
             </Typography>
             <Button
@@ -217,7 +258,7 @@ const HomeParticipante = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: "bold" }}>Mês</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Mês Corrente</TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>Status</TableCell>
                 </TableRow>
               </TableHead>
@@ -230,7 +271,7 @@ const HomeParticipante = () => {
                       <TableCell
                         sx={{
                           height: "20px",
-                          width:"150px", // Altura fixa
+                          width: "150px", // Largura fixa
                           backgroundColor: status === "Pago" ? "#4caf50" : "#f44336", // Verde para "Pago", vermelho para "Não Pago"
                           color: "white", // Texto branco para melhor contraste
                           fontWeight: "bold", // Texto em negrito
