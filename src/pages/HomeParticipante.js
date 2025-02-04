@@ -228,6 +228,16 @@ const HomeParticipante = () => {
             mb={3}
             gap={2}
           >
+
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleMarcarPresenca}
+              sx={{ minWidth: isMobile ? "100%" : "auto" }}
+              disabled={participante.inativo} // Desabilita o botão se o participante estiver inativo
+            >
+              Marcar Presença no Treino
+            </Button>
             <Typography
               variant="h7"
               sx={{
@@ -243,15 +253,7 @@ const HomeParticipante = () => {
             >
               Histórico de Contribuições
             </Typography>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleMarcarPresenca}
-              sx={{ minWidth: isMobile ? "100%" : "auto" }}
-              disabled={participante.inativo} // Desabilita o botão se o participante estiver inativo
-            >
-              Marcar Presença no Treino
-            </Button>
+
           </Box>
 
           <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 3 }}>
