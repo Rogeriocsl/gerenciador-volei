@@ -220,41 +220,46 @@ const HomeParticipante = () => {
           </Card>
 
 
-          <Box
-            display="flex"
-            flexDirection={isMobile ? "column" : "row"}
-            justifyContent="space-between"
-            alignItems={isMobile ? "flex-start" : "center"}
-            mb={3}
-            gap={2}
-          >
-
+          <Box display="flex" flexDirection="column" alignItems="center" gap={2}>
             <Button
               variant="contained"
               color="primary"
               onClick={handleMarcarPresenca}
-              sx={{ minWidth: isMobile ? "100%" : "auto" }}
-              disabled={participante.inativo} // Desabilita o botão se o participante estiver inativo
+              sx={{
+                minWidth: isMobile ? "100%" : "auto",
+                padding: "12px 24px",
+                fontSize: "1rem",
+                fontWeight: "bold",
+                borderRadius: "8px",
+                boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
+                transition: "all 0.3s ease-in-out",
+                "&:hover": {
+                  backgroundColor: "#1E88E5",
+                  transform: "scale(1.05)",
+                },
+              }}
+              disabled={participante.inativo}
             >
               Marcar Presença no Treino
             </Button>
+
             <Typography
-              variant="h7"
+              variant="h4"
               sx={{
                 textAlign: "center",
                 color: "white",
                 fontFamily: "Roboto, sans-serif",
                 fontWeight: 700,
                 marginBottom: 4,
-                marginTop: 6,
+                marginTop: 2,
                 fontSize: { xs: "2rem", sm: "3rem", md: "4rem" },
                 textShadow: "2px 2px 8px rgba(0, 0, 0, 0.9)",
               }}
             >
               Histórico de Contribuições
             </Typography>
-
           </Box>
+
 
           <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 3 }}>
             <Table>
