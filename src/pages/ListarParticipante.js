@@ -42,7 +42,6 @@ const ListarParticipante = () => {
     const [selectedParticipante, setSelectedParticipante] = useState(null);
     const [filtroTurma, setFiltroTurma] = useState("todas");
     const [mesAnoContribuicao, setMesAnoContribuicao] = useState("");
-    const [valorContribuicao, setValorContribuicao] = useState(10);
     /**filtro modal */
     const [openContribuicoesModal, setOpenContribuicoesModal] = useState(false);
     const [anoFiltro, setAnoFiltro] = useState("");
@@ -50,19 +49,7 @@ const ListarParticipante = () => {
     const [contribuicoesFiltradas, setContribuicoesFiltradas] = useState([]);
     const [totalContribuicoes, setTotalContribuicoes] = useState(0);
 
-    const participantesFiltrados = participantes.filter((p) => {
-        console.log('Turma participante:', p.turma);  // Log para verificar valor de turma no participante
-        console.log('Filtro turma:', filtroTurma);     // Log para verificar valor do filtro de turma
-    
-        const matchesSearch = String(p.nome).toLowerCase().includes(searchTerm) ||
-            String(p.matricula).toLowerCase().includes(searchTerm);
-    
-        // Comparação que leva em conta espaços extras e insensibilidade de maiúsculas/minúsculas
-        const matchesTurma = filtroTurma === "todas" || 
-            p.turma?.trim().toLowerCase() === filtroTurma.trim().toLowerCase();  
-    
-        return matchesSearch && matchesTurma;
-    });
+
     
     
     
@@ -177,6 +164,7 @@ const ListarParticipante = () => {
             });
 
             // Feedback de sucesso
+            handleCloseModal();
             handleSnackbarOpen("Contribuição removida com sucesso!", "success");
         } catch (error) {
             console.error("Erro ao remover contribuição:", error);
