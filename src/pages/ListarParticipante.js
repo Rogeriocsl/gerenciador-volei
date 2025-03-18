@@ -50,6 +50,25 @@ const ListarParticipante = () => {
     const [contribuicoesFiltradas, setContribuicoesFiltradas] = useState([]);
     const [totalContribuicoes, setTotalContribuicoes] = useState(0);
 
+    const participantesFiltrados = participantes.filter((p) => {
+        console.log('Turma participante:', p.turma);  // Log para verificar valor de turma no participante
+        console.log('Filtro turma:', filtroTurma);     // Log para verificar valor do filtro de turma
+    
+        const matchesSearch = String(p.nome).toLowerCase().includes(searchTerm) ||
+            String(p.matricula).toLowerCase().includes(searchTerm);
+    
+        // Comparação que leva em conta espaços extras e insensibilidade de maiúsculas/minúsculas
+        const matchesTurma = filtroTurma === "todas" || 
+            p.turma?.trim().toLowerCase() === filtroTurma.trim().toLowerCase();  
+    
+        return matchesSearch && matchesTurma;
+    });
+    
+    
+    
+    
+    
+
     const handleAbrirModalContribuicoes = () => {
         setOpenContribuicoesModal(true);
     };
@@ -79,9 +98,6 @@ const ListarParticipante = () => {
         // Armazenar o total
         setTotalContribuicoes(totalContribuicoes);
     };
-
-
-
 
     // Função para calcular o total das contribuições
     const calcularTotalContribuicoes = () => {
@@ -142,36 +158,6 @@ const ListarParticipante = () => {
             handleSnackbarOpen("Erro ao atualizar participante. Tente novamente.");
         }
     };
-    /*
-        const handleRemoverPagamento = async (matricula, mesAno) => {
-            if (!matricula || !mesAno) {
-                console.log("Matrícula ou Mês/Ano inválido.");
-                setSnackbarMessage("Matrícula ou Mês/Ano inválido.");
-                setSnackbarSeverity("error");
-                setOpenSnackbar(true);
-                return;
-            }
-    
-            try {
-                const participanteRef = ref(database, `participantes/${matricula}/contribuicoesMensais/${mesAno}`);
-                await remove(participanteRef);
-    
-                // Exibir feedback de sucesso
-                handleSnackbarOpen("Contribuiçao removida com sucesso!"); // Mostra o feedback
-                setSnackbarSeverity("success");
-                setOpenSnackbar(true);
-                handleCloseModal(); // Fecha o modal
-    
-                // Atualiza a lista de participantes após a remoção
-                await fetchParticipantes();
-            } catch (error) {
-                console.error("Erro ao remover contribuição:", error);
-                setSnackbarMessage("Erro ao remover contribuição. Tente novamente.");
-                setSnackbarSeverity("error");
-                setOpenSnackbar(true);  // Confirme se isso é chamado
-            }
-        };
-    */
 
     const handleRemoverPagamento = async (matricula, mesAno) => {
         if (!matricula || !mesAno) {
@@ -197,6 +183,7 @@ const ListarParticipante = () => {
             handleSnackbarOpen("Erro ao remover contribuição. Tente novamente.", "error");
         }
     };
+
     const handleExportToCSV = () => {
         const header = "Nome,Matrícula\n";
         const rows = participantes
@@ -508,8 +495,8 @@ const ListarParticipante = () => {
                         }}
                     >
                         <MenuItem value="todas">Todas</MenuItem>
-                        <MenuItem value="Terça-feira">Terça-feira</MenuItem>
-                        <MenuItem value="Quinta-feira">Quinta-feira</MenuItem>
+                        <MenuItem value="Terça-Feira">Terça-Feira</MenuItem>
+                        <MenuItem value="Quinta-Feira">Quinta-feira</MenuItem>
                     </TextField>
                 </Box>
 
@@ -577,8 +564,8 @@ const ListarParticipante = () => {
                                 const matchesSearch = String(p.nome).toLowerCase().includes(searchTerm) ||
                                     String(p.matricula).toLowerCase().includes(searchTerm);
                                 const matchesTurma = filtroTurma === "todas" ||
-                                    (filtroTurma === "Terça-feira" && p.turma === "Terça-feira") ||
-                                    (filtroTurma === "Quinta-feira" && p.turma === "Quinta-feira");
+                                    (filtroTurma === "Terça-Feira" && p.turma === "Terça-Feira") ||
+                                    (filtroTurma === "Quinta-Feira" && p.turma === "Quinta-Feira");
                                 return matchesSearch && matchesTurma;
                             })
                             .map((participante) => {
