@@ -20,7 +20,7 @@ import {
     MenuItem,
     TableFooter,
 } from "@mui/material";
-import { Search, ArrowBack, Edit, Visibility, CheckCircle, RemoveCircle, Sort, Download } from "@mui/icons-material";
+import { Search, ArrowBack, Edit, Visibility, CheckCircle, RemoveCircle, Sort, Download, Assessment } from "@mui/icons-material";
 import { database } from "../firebase";
 import { ref, get, update, remove } from "firebase/database";
 import "@fontsource/roboto";
@@ -43,6 +43,45 @@ const ListarParticipante = () => {
     const [filtroTurma, setFiltroTurma] = useState("todas");
     const [mesAnoContribuicao, setMesAnoContribuicao] = useState("");
     const [valorContribuicao, setValorContribuicao] = useState(10);
+    /**filtro modal */
+    const [openContribuicoesModal, setOpenContribuicoesModal] = useState(false);
+    const [anoFiltro, setAnoFiltro] = useState("");
+    const [mesFiltro, setMesFiltro] = useState("");
+    const [contribuicoesFiltradas, setContribuicoesFiltradas] = useState([]);
+    const [totalContribuicoes, setTotalContribuicoes] = useState(0);
+
+    const handleAbrirModalContribuicoes = () => {
+        setOpenContribuicoesModal(true);
+    };
+
+    const handleFecharModalContribuicoes = () => {
+        setOpenContribuicoesModal(false);
+    };
+
+    const handleFiltrarContribuicoes = () => {
+        const filtroMes = mesFiltro ? mesFiltro : new Date().getMonth() + 1;
+        const filtroAno = anoFiltro ? anoFiltro : new Date().getFullYear();
+        const mesAnoFiltro = `${filtroAno}-${String(filtroMes).padStart(2, "0")}`;
+
+        const contribuicoes = participantes.map((participante) => {
+            // Verifica se 'contribuicoesMensais' existe e se o mês/ano está presente
+            const contribMesAno = participante.contribuicoesMensais ? participante.contribuicoesMensais[mesAnoFiltro] : null;
+            return contribMesAno ? { ...participante, contribuicao: contribMesAno } : null;
+        }).filter(Boolean); // Remove os itens null
+
+        setContribuicoesFiltradas(contribuicoes);
+
+        // Calcular o total de contribuições
+        const totalContribuicoes = contribuicoes.reduce((total, participante) => {
+            return total + (participante.contribuicao ? participante.contribuicao.valor : 0);
+        }, 0);
+
+        // Armazenar o total
+        setTotalContribuicoes(totalContribuicoes);
+    };
+
+
+
 
     // Função para calcular o total das contribuições
     const calcularTotalContribuicoes = () => {
@@ -103,13 +142,40 @@ const ListarParticipante = () => {
             handleSnackbarOpen("Erro ao atualizar participante. Tente novamente.");
         }
     };
-/*
+    /*
+        const handleRemoverPagamento = async (matricula, mesAno) => {
+            if (!matricula || !mesAno) {
+                console.log("Matrícula ou Mês/Ano inválido.");
+                setSnackbarMessage("Matrícula ou Mês/Ano inválido.");
+                setSnackbarSeverity("error");
+                setOpenSnackbar(true);
+                return;
+            }
+    
+            try {
+                const participanteRef = ref(database, `participantes/${matricula}/contribuicoesMensais/${mesAno}`);
+                await remove(participanteRef);
+    
+                // Exibir feedback de sucesso
+                handleSnackbarOpen("Contribuiçao removida com sucesso!"); // Mostra o feedback
+                setSnackbarSeverity("success");
+                setOpenSnackbar(true);
+                handleCloseModal(); // Fecha o modal
+    
+                // Atualiza a lista de participantes após a remoção
+                await fetchParticipantes();
+            } catch (error) {
+                console.error("Erro ao remover contribuição:", error);
+                setSnackbarMessage("Erro ao remover contribuição. Tente novamente.");
+                setSnackbarSeverity("error");
+                setOpenSnackbar(true);  // Confirme se isso é chamado
+            }
+        };
+    */
+
     const handleRemoverPagamento = async (matricula, mesAno) => {
         if (!matricula || !mesAno) {
-            console.log("Matrícula ou Mês/Ano inválido.");
-            setSnackbarMessage("Matrícula ou Mês/Ano inválido.");
-            setSnackbarSeverity("error");
-            setOpenSnackbar(true);
+            handleSnackbarOpen("Matrícula ou Mês/Ano inválido.", "error");
             return;
         }
 
@@ -117,47 +183,20 @@ const ListarParticipante = () => {
             const participanteRef = ref(database, `participantes/${matricula}/contribuicoesMensais/${mesAno}`);
             await remove(participanteRef);
 
-            // Exibir feedback de sucesso
-            handleSnackbarOpen("Contribuiçao removida com sucesso!"); // Mostra o feedback
-            setSnackbarSeverity("success");
-            setOpenSnackbar(true);
-            handleCloseModal(); // Fecha o modal
+            // Atualiza o estado local do participante
+            setSelectedParticipante((prev) => {
+                const novasContribuicoes = { ...prev.contribuicoesMensais };
+                delete novasContribuicoes[mesAno];
+                return { ...prev, contribuicoesMensais: novasContribuicoes };
+            });
 
-            // Atualiza a lista de participantes após a remoção
-            await fetchParticipantes();
+            // Feedback de sucesso
+            handleSnackbarOpen("Contribuição removida com sucesso!", "success");
         } catch (error) {
             console.error("Erro ao remover contribuição:", error);
-            setSnackbarMessage("Erro ao remover contribuição. Tente novamente.");
-            setSnackbarSeverity("error");
-            setOpenSnackbar(true);  // Confirme se isso é chamado
+            handleSnackbarOpen("Erro ao remover contribuição. Tente novamente.", "error");
         }
     };
-*/
-
-const handleRemoverPagamento = async (matricula, mesAno) => {
-    if (!matricula || !mesAno) {
-        handleSnackbarOpen("Matrícula ou Mês/Ano inválido.", "error");
-        return;
-    }
-
-    try {
-        const participanteRef = ref(database, `participantes/${matricula}/contribuicoesMensais/${mesAno}`);
-        await remove(participanteRef);
-
-        // Atualiza o estado local do participante
-        setSelectedParticipante((prev) => {
-            const novasContribuicoes = { ...prev.contribuicoesMensais };
-            delete novasContribuicoes[mesAno];
-            return { ...prev, contribuicoesMensais: novasContribuicoes };
-        });
-
-        // Feedback de sucesso
-        handleSnackbarOpen("Contribuição removida com sucesso!", "success");
-    } catch (error) {
-        console.error("Erro ao remover contribuição:", error);
-        handleSnackbarOpen("Erro ao remover contribuição. Tente novamente.", "error");
-    }
-};
     const handleExportToCSV = () => {
         const header = "Nome,Matrícula\n";
         const rows = participantes
@@ -446,9 +485,14 @@ const handleRemoverPagamento = async (matricula, mesAno) => {
                         <IconButton onClick={handleSort}>
                             <Sort />
                         </IconButton>
+                        <IconButton onClick={handleAbrirModalContribuicoes}>
+                            <Assessment />
+                        </IconButton>
+
                         <IconButton onClick={handleExportToCSV}>
                             <Download />
                         </IconButton>
+
                     </Box>
 
                     {/* Filtro de Turma */}
@@ -654,7 +698,126 @@ const handleRemoverPagamento = async (matricula, mesAno) => {
                 </Table>
             </TableContainer>
 
-{/*
+            <Modal open={openContribuicoesModal} onClose={handleFecharModalContribuicoes}>
+                <Box
+                    sx={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        bgcolor: "background.paper",
+                        p: 3,
+                        boxShadow: 24,
+                        width: "90%",
+                        maxWidth: 500,
+                        maxHeight: "80vh",
+                        overflowY: "auto",
+                        borderRadius: 2,
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 2,
+                    }}
+                >
+                    <Typography variant="h6" textAlign="center">
+                        Contribuições Recebidas
+                    </Typography>
+
+                    {/* Filtros de Mês e Ano */}
+                    <Box sx={{ display: "flex", gap: 2 }}>
+                        <TextField
+                            select
+                            label="Mês"
+                            value={mesFiltro}
+                            onChange={(e) => setMesFiltro(e.target.value)}
+                            fullWidth
+                        >
+                            <MenuItem value="01">Janeiro</MenuItem>
+                            <MenuItem value="02">Fevereiro</MenuItem>
+                            <MenuItem value="03">Março</MenuItem>
+                            <MenuItem value="04">Abril</MenuItem>
+                            <MenuItem value="05">Maio</MenuItem>
+                            <MenuItem value="06">Junho</MenuItem>
+                            <MenuItem value="07">Julho</MenuItem>
+                            <MenuItem value="08">Agosto</MenuItem>
+                            <MenuItem value="09">Setembro</MenuItem>
+                            <MenuItem value="10">Outubro</MenuItem>
+                            <MenuItem value="11">Novembro</MenuItem>
+                            <MenuItem value="12">Dezembro</MenuItem>
+
+                        </TextField>
+
+                        <TextField
+                            select
+                            label="Ano"
+                            value={anoFiltro}
+                            onChange={(e) => setAnoFiltro(e.target.value)}
+                            fullWidth
+                        >
+                            <MenuItem value={new Date().getFullYear()}>{new Date().getFullYear()}</MenuItem>
+                            <MenuItem value={new Date().getFullYear() - 1}>{new Date().getFullYear() - 1}</MenuItem>
+                            {/* Adicione outros anos se necessário */}
+                        </TextField>
+                    </Box>
+
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleFiltrarContribuicoes}
+                        sx={{ width: "100%" }}
+                    >
+                        Filtrar
+                    </Button>
+
+                    {/* Exibir Contribuições Filtradas */}
+                    <Box sx={{ marginTop: 2 }}>
+                        {contribuicoesFiltradas.length === 0 ? (
+                            <Typography variant="body1" color="textSecondary">
+                                Nenhuma contribuição encontrada para o mês e ano selecionados.
+                            </Typography>
+                        ) : (
+                            <>
+                                <Table>
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell>Matrícula</TableCell>
+                                            <TableCell>Nome</TableCell>
+                                            <TableCell>Valor Contribuição</TableCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {contribuicoesFiltradas.map((participante) => (
+                                            <TableRow key={participante.matricula}>
+                                                <TableCell>{participante.matricula}</TableCell>
+                                                <TableCell>{participante.nome}</TableCell>
+                                                <TableCell>{formatarMoeda(participante.contribuicao.valor)}</TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+
+                                {/* Exibir Total de Contribuições */}
+                                <Box sx={{ marginTop: 2 }}>
+                                    <Typography variant="h6" align="right">
+                                        Total das Contribuições: {formatarMoeda(totalContribuicoes)}
+                                    </Typography>
+                                </Box>
+                            </>
+                        )}
+                    </Box>
+
+
+                    <Button
+                        variant="outlined"
+                        color="secondary"
+                        fullWidth
+                        onClick={handleFecharModalContribuicoes}
+                    >
+                        Fechar
+                    </Button>
+                </Box>
+            </Modal>
+
+
             <Modal open={openModal} onClose={handleCloseModal}>
                 <Box
                     sx={{
@@ -679,6 +842,7 @@ const handleRemoverPagamento = async (matricula, mesAno) => {
 
                     {selectedParticipante && (
                         <>
+                            {/* Campos de edição do participante */}
                             <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2 }}>
                                 <TextField
                                     fullWidth
@@ -742,34 +906,40 @@ const handleRemoverPagamento = async (matricula, mesAno) => {
                                 </TextField>
                             </Box>
 
+                            {/* Campo para selecionar o mês/ano da contribuição */}
                             <TextField
                                 fullWidth
-                                label="Mês/Ano da Contribuição"
+                                label="Selecione o Mês/Ano da Contribuição"
                                 type="month"
                                 value={mesAnoContribuicao}
                                 onChange={(e) => setMesAnoContribuicao(e.target.value)}
                                 InputLabelProps={{ shrink: true }}
                             />
 
+                            {/* Botões de ação */}
                             <Box sx={{ display: "flex", flexDirection: "row", justifyContent: "space-between", gap: 2, mt: 2 }}>
+                                {/* Botão para remover a contribuição selecionada */}
                                 <Button
                                     variant="outlined"
                                     color="error"
                                     fullWidth
                                     onClick={() => {
-                                        const currentMonth = new Date().getMonth() + 1;
-                                        const currentYear = new Date().getFullYear();
-                                        const currentMonthYear = `${currentYear}-${String(currentMonth).padStart(2, "0")}`;
-                                        handleRemoverPagamento(selectedParticipante.matricula, currentMonthYear);
+                                        if (!mesAnoContribuicao) {
+                                            handleSnackbarOpen("Selecione um mês/ano para remover a contribuição.", "error");
+                                            return;
+                                        }
+                                        handleRemoverPagamento(selectedParticipante.matricula, mesAnoContribuicao);
                                     }}
                                 >
                                     Remover Contribuição
                                 </Button>
 
+                                {/* Botão para registrar uma nova contribuição */}
                                 <Button variant="contained" color="secondary" fullWidth onClick={handleRegistrarContribuicaoManual}>
                                     Registrar Contribuição
                                 </Button>
 
+                                {/* Botão para salvar as alterações */}
                                 <Button variant="contained" color="primary" fullWidth onClick={handleEditParticipante}>
                                     Salvar
                                 </Button>
@@ -778,138 +948,6 @@ const handleRemoverPagamento = async (matricula, mesAno) => {
                     )}
                 </Box>
             </Modal>
-*/}
-
-<Modal open={openModal} onClose={handleCloseModal}>
-    <Box
-        sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            bgcolor: "background.paper",
-            p: 3,
-            boxShadow: 24,
-            width: "90%",
-            maxWidth: 500,
-            maxHeight: "80vh",
-            overflowY: "auto",
-            borderRadius: 2,
-            display: "flex",
-            flexDirection: "column",
-            gap: 2,
-        }}
-    >
-        <Typography variant="h6" textAlign="center">Editar Participante</Typography>
-
-        {selectedParticipante && (
-            <>
-                {/* Campos de edição do participante */}
-                <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2 }}>
-                    <TextField
-                        fullWidth
-                        label="Nome"
-                        value={selectedParticipante.nome || ""}
-                        onChange={(e) =>
-                            setSelectedParticipante((prev) => ({ ...prev, nome: e.target.value }))
-                        }
-                    />
-                    <TextField
-                        fullWidth
-                        label="Contato"
-                        value={selectedParticipante.contato || ""}
-                        onChange={(e) =>
-                            setSelectedParticipante((prev) => ({ ...prev, contato: e.target.value }))
-                        }
-                    />
-                </Box>
-
-                <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2 }}>
-                    <TextField
-                        fullWidth
-                        label="Nome Responsável"
-                        value={selectedParticipante.nomeResponsavel || ""}
-                        onChange={(e) =>
-                            setSelectedParticipante((prev) => ({ ...prev, nomeResponsavel: e.target.value }))
-                        }
-                    />
-                    <TextField
-                        fullWidth
-                        label="Contato Responsável"
-                        value={selectedParticipante.contatoResponsavel || ""}
-                        onChange={(e) =>
-                            setSelectedParticipante((prev) => ({ ...prev, contatoResponsavel: e.target.value }))
-                        }
-                    />
-                </Box>
-
-                <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2 }}>
-                    <TextField
-                        fullWidth
-                        label="Data de Nascimento"
-                        type="date"
-                        value={selectedParticipante.dataNascimento || ""}
-                        onChange={(e) =>
-                            setSelectedParticipante((prev) => ({ ...prev, dataNascimento: e.target.value }))
-                        }
-                        InputLabelProps={{ shrink: true }}
-                    />
-                    <TextField
-                        fullWidth
-                        select
-                        label="Turma"
-                        value={selectedParticipante.turma || ""}
-                        onChange={(e) =>
-                            setSelectedParticipante((prev) => ({ ...prev, turma: e.target.value }))
-                        }
-                    >
-                        <MenuItem value="Terça-Feira">Terça-Feira</MenuItem>
-                        <MenuItem value="Quinta-Feira">Quinta-Feira</MenuItem>
-                    </TextField>
-                </Box>
-
-                {/* Campo para selecionar o mês/ano da contribuição */}
-                <TextField
-                    fullWidth
-                    label="Selecione o Mês/Ano da Contribuição"
-                    type="month"
-                    value={mesAnoContribuicao}
-                    onChange={(e) => setMesAnoContribuicao(e.target.value)}
-                    InputLabelProps={{ shrink: true }}
-                />
-
-                {/* Botões de ação */}
-                <Box sx={{ display: "flex", flexDirection: "row", justifyContent: "space-between", gap: 2, mt: 2 }}>
-                    {/* Botão para remover a contribuição selecionada */}
-                    <Button
-                        variant="outlined"
-                        color="error"
-                        fullWidth
-                        onClick={() => {
-                            if (!mesAnoContribuicao) {
-                                handleSnackbarOpen("Selecione um mês/ano para remover a contribuição.", "error");
-                                return;
-                            }
-                            handleRemoverPagamento(selectedParticipante.matricula, mesAnoContribuicao);
-                        }}
-                    >
-                        Remover Contribuição
-                    </Button>
-
-                    {/* Botão para registrar uma nova contribuição */}
-                    <Button variant="contained" color="secondary" fullWidth onClick={handleRegistrarContribuicaoManual}>
-                        Registrar Contribuição
-                    </Button>
-
-                    {/* Botão para salvar as alterações */}
-                    <Button variant="contained" color="primary" fullWidth onClick={handleEditParticipante}>
-                        Salvar
-                    </Button>
-                </Box>
-            </>
-        )}
-    </Box>
-</Modal>
             <Snackbar
                 open={snackbarOpen}
                 autoHideDuration={6000} // Fecha automaticamente após 6 segundos
