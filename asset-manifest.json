@@ -1,29 +1,33 @@
 {
   "files": {
-    "main.css": "/gerenciador-volei/static/css/main.b2ddece4.css",
-    "main.js": "/gerenciador-volei/static/js/main.32f830f1.js",
+    "main.css": "/gerenciador-volei/static/css/main.aabc3170.css",
+    "main.js": "/gerenciador-volei/static/js/main.9876d4e4.js",
     "static/media/background.png": "/gerenciador-volei/static/media/background.35432dc74a38ebba8a49.png",
     "static/media/bola.png": "/gerenciador-volei/static/media/bola.941ca9908a2d53ca2b5b.png",
-    "static/media/roboto-latin-400-normal.woff2": "/gerenciador-volei/static/media/roboto-latin-400-normal.297d48e1b5a10c0831a9.woff2",
-    "static/media/roboto-latin-400-normal.woff": "/gerenciador-volei/static/media/roboto-latin-400-normal.047a7839f69b209db815.woff",
-    "static/media/roboto-cyrillic-ext-400-normal.woff2": "/gerenciador-volei/static/media/roboto-cyrillic-ext-400-normal.5cec61a21cc20180fbe1.woff2",
-    "static/media/roboto-cyrillic-ext-400-normal.woff": "/gerenciador-volei/static/media/roboto-cyrillic-ext-400-normal.135d076fa32aa0b4d105.woff",
-    "static/media/roboto-latin-ext-400-normal.woff2": "/gerenciador-volei/static/media/roboto-latin-ext-400-normal.2eeae187764baf05867d.woff2",
-    "static/media/roboto-latin-ext-400-normal.woff": "/gerenciador-volei/static/media/roboto-latin-ext-400-normal.27da5b36b6d3a16f53f4.woff",
-    "static/media/roboto-cyrillic-400-normal.woff2": "/gerenciador-volei/static/media/roboto-cyrillic-400-normal.a9e19870cf6c4b973427.woff2",
-    "static/media/roboto-cyrillic-400-normal.woff": "/gerenciador-volei/static/media/roboto-cyrillic-400-normal.5d2930082227d172f62c.woff",
-    "static/media/roboto-greek-400-normal.woff2": "/gerenciador-volei/static/media/roboto-greek-400-normal.2c32b1315be61477013a.woff2",
-    "static/media/roboto-greek-400-normal.woff": "/gerenciador-volei/static/media/roboto-greek-400-normal.160a791a8e4f46bca3cc.woff",
-    "static/media/roboto-vietnamese-400-normal.woff2": "/gerenciador-volei/static/media/roboto-vietnamese-400-normal.d3f8e26d6c27de8102b6.woff2",
-    "static/media/roboto-vietnamese-400-normal.woff": "/gerenciador-volei/static/media/roboto-vietnamese-400-normal.0dc97c66f9b542d6fa17.woff",
-    "static/media/roboto-greek-ext-400-normal.woff2": "/gerenciador-volei/static/media/roboto-greek-ext-400-normal.1df4abad55796d11a0c8.woff2",
-    "static/media/roboto-greek-ext-400-normal.woff": "/gerenciador-volei/static/media/roboto-greek-ext-400-normal.16eb83b4a3b1ea994243.woff",
+    "static/media/roboto-latin-400-normal.woff2": "/gerenciador-volei/static/media/roboto-latin-400-normal.df1be0be92f6f19b8115.woff2",
+    "static/media/roboto-latin-400-normal.woff": "/gerenciador-volei/static/media/roboto-latin-400-normal.50a0a61e29c19a2f05cb.woff",
+    "static/media/roboto-math-400-normal.woff2": "/gerenciador-volei/static/media/roboto-math-400-normal.b60d9fba1e21da7497e6.woff2",
+    "static/media/roboto-math-400-normal.woff": "/gerenciador-volei/static/media/roboto-math-400-normal.3d3a272e5233c5fb1969.woff",
+    "static/media/roboto-cyrillic-ext-400-normal.woff2": "/gerenciador-volei/static/media/roboto-cyrillic-ext-400-normal.31476620b88eec076438.woff2",
+    "static/media/roboto-cyrillic-ext-400-normal.woff": "/gerenciador-volei/static/media/roboto-cyrillic-ext-400-normal.5e3f232f89080810567d.woff",
+    "static/media/roboto-latin-ext-400-normal.woff2": "/gerenciador-volei/static/media/roboto-latin-ext-400-normal.0f86a30ca7e981fcfc99.woff2",
+    "static/media/roboto-latin-ext-400-normal.woff": "/gerenciador-volei/static/media/roboto-latin-ext-400-normal.2bfbba2d51a85c8702dd.woff",
+    "static/media/roboto-cyrillic-400-normal.woff2": "/gerenciador-volei/static/media/roboto-cyrillic-400-normal.86d5c52f4588f9f221d7.woff2",
+    "static/media/roboto-symbols-400-normal.woff2": "/gerenciador-volei/static/media/roboto-symbols-400-normal.bb5b5d1459beb07bd3d5.woff2",
+    "static/media/roboto-cyrillic-400-normal.woff": "/gerenciador-volei/static/media/roboto-cyrillic-400-normal.d67ac585bb6a05dbf71c.woff",
+    "static/media/roboto-greek-400-normal.woff2": "/gerenciador-volei/static/media/roboto-greek-400-normal.98a717d5a38e77c0f657.woff2",
+    "static/media/roboto-symbols-400-normal.woff": "/gerenciador-volei/static/media/roboto-symbols-400-normal.f4f7e3bd8264f1a640cb.woff",
+    "static/media/roboto-vietnamese-400-normal.woff2": "/gerenciador-volei/static/media/roboto-vietnamese-400-normal.b1b8baa94fbcaa57d098.woff2",
+    "static/media/roboto-greek-400-normal.woff": "/gerenciador-volei/static/media/roboto-greek-400-normal.ecd8572d631f20ff5bd5.woff",
+    "static/media/roboto-vietnamese-400-normal.woff": "/gerenciador-volei/static/media/roboto-vietnamese-400-normal.1cffe58e71a9109191a2.woff",
+    "static/media/roboto-greek-ext-400-normal.woff2": "/gerenciador-volei/static/media/roboto-greek-ext-400-normal.2d5875b032a1cca91eb2.woff2",
+    "static/media/roboto-greek-ext-400-normal.woff": "/gerenciador-volei/static/media/roboto-greek-ext-400-normal.a0baf7d6726d8f751a27.woff",
     "index.html": "/gerenciador-volei/index.html",
-    "main.b2ddece4.css.map": "/gerenciador-volei/static/css/main.b2ddece4.css.map",
-    "main.32f830f1.js.map": "/gerenciador-volei/static/js/main.32f830f1.js.map"
+    "main.aabc3170.css.map": "/gerenciador-volei/static/css/main.aabc3170.css.map",
+    "main.9876d4e4.js.map": "/gerenciador-volei/static/js/main.9876d4e4.js.map"
   },
   "entrypoints": [
-    "static/css/main.b2ddece4.css",
-    "static/js/main.32f830f1.js"
+    "static/css/main.aabc3170.css",
+    "static/js/main.9876d4e4.js"
   ]
 }
