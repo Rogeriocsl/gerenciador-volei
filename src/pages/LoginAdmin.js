@@ -5,10 +5,8 @@ import CloseIcon from "@mui/icons-material/Close";
 import backgroundImage from "../assets/background.png";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { CircularProgress } from "@mui/material";
-
 import { auth } from "../firebase";
 import bolaImage from "../assets/bola.png";
-
 import "@fontsource/roboto"; // Fonte Roboto
 
 const LoginAdmin = () => {
@@ -17,7 +15,6 @@ const LoginAdmin = () => {
   const [error, setError] = useState(""); // Estado para armazenar a mensagem de erro
   const [openSnackbar, setOpenSnackbar] = useState(false); // Controle para mostrar a Snackbar
   const [loading, setLoading] = useState(false);
-
   const navigate = useNavigate(); // Para navegação
 
   const handleLogin = async (e) => {
@@ -34,13 +31,21 @@ const LoginAdmin = () => {
     setLoading(true); // Ativa o spinner
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      
+      // Após o login bem-sucedido, cria o token
+      const token = await userCredential.user.getIdToken();
+
+      // Armazenando o token no localStorage
+      localStorage.setItem("authToken", token);
+
+      // Redirecionando para a página do administrador
       navigate("/home-administrativo");
+
     } catch (error) {
       console.error("Erro ao fazer login:", error);
       let errorMessage = "Erro desconhecido.";
       if (error.code) {
-        console.log("Código do erro:", error.code);
         switch (error.code) {
           case "auth/invalid-email":
             errorMessage = "Email inválido. Verifique o endereço de email.";
@@ -54,9 +59,6 @@ const LoginAdmin = () => {
           case "auth/too-many-requests":
             errorMessage = "Muitas tentativas de login. Tente novamente mais tarde.";
             break;
-          case "auth/invalid-credential":
-            errorMessage = "E-mail ou senha incorretos. Verifique suas credenciais e tente novamente.";
-            break;
           default:
             errorMessage = "Erro desconhecido. Tente novamente mais tarde.";
         }
@@ -69,20 +71,12 @@ const LoginAdmin = () => {
     }
   };
 
-
   const handleCloseSnackbar = () => {
     setOpenSnackbar(false); // Fecha o Snackbar quando o usuário interagir
   };
 
   return (
-    <Box
-      sx={{
-        height: "100vh",
-        display: "flex",
-        flexDirection: { xs: "column", md: "row" },
-      }}
-    >
-      {/* Coluna da esquerda com a imagem de fundo */}
+    <Box sx={{ height: "100vh", display: "flex", flexDirection: { xs: "column", md: "row" } }}>
       <Box
         sx={{
           flex: 1,
@@ -94,7 +88,6 @@ const LoginAdmin = () => {
         }}
       />
 
-      {/* Coluna da direita com o conteúdo */}
       <Box
         sx={{
           flex: 1,
@@ -117,13 +110,7 @@ const LoginAdmin = () => {
               marginBottom: 20,
             }}
           />
-          <Typography
-            variant="h5"
-            sx={{
-              marginBottom: 3,
-              fontFamily: '"Roboto", sans-serif' // Aplicando a fonte Roboto
-            }}
-          >
+          <Typography variant="h5" sx={{ marginBottom: 3, fontFamily: '"Roboto", sans-serif' }}>
             Bem-vindo ao Gerenciador de Vôlei
           </Typography>
 
@@ -154,46 +141,29 @@ const LoginAdmin = () => {
               color="primary"
               fullWidth
               sx={{ marginBottom: 2 }}
-              disabled={loading} // Desativa o botão enquanto o carregamento ocorre
+              disabled={loading}
             >
               Entrar
             </Button>
           </form>
-          {/* Exibe o spinner enquanto a autenticação estiver em andamento */}
           {loading && <CircularProgress size={24} sx={{ margin: 2 }} />}
-          <Button
-            variant="outlined"
-            color="secondary"
-            onClick={() => navigate("/")}
-            fullWidth
-          >
+          <Button variant="outlined" color="secondary" onClick={() => navigate("/")} fullWidth>
             Voltar para Login Participante
           </Button>
         </Box>
       </Box>
 
-      {/* Snackbar para mostrar a mensagem de erro */}
-      <Snackbar
-        open={openSnackbar}
-        autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
-      >
+      <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={handleCloseSnackbar}>
         <SnackbarContent
           sx={{
-            backgroundColor: "red", // Fundo vermelho
-            color: "white", // Texto branco
+            backgroundColor: "red",
+            color: "white",
             borderRadius: 1,
             padding: 2,
           }}
           message={error}
-          autoHideDuration={4000}
           action={
-            <IconButton
-              size="small"
-              aria-label="close"
-              color="inherit"
-              onClick={handleCloseSnackbar}
-            >
+            <IconButton size="small" aria-label="close" color="inherit" onClick={handleCloseSnackbar}>
               <CloseIcon fontSize="small" />
             </IconButton>
           }

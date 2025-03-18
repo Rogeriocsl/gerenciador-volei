@@ -42,19 +42,12 @@ const ListarParticipante = () => {
     const [selectedParticipante, setSelectedParticipante] = useState(null);
     const [filtroTurma, setFiltroTurma] = useState("todas");
     const [mesAnoContribuicao, setMesAnoContribuicao] = useState("");
-    /**filtro modal */
     const [openContribuicoesModal, setOpenContribuicoesModal] = useState(false);
     const [anoFiltro, setAnoFiltro] = useState("");
     const [mesFiltro, setMesFiltro] = useState("");
     const [contribuicoesFiltradas, setContribuicoesFiltradas] = useState([]);
     const [totalContribuicoes, setTotalContribuicoes] = useState(0);
 
-
-    
-    
-    
-    
-    
 
     const handleAbrirModalContribuicoes = () => {
         setOpenContribuicoesModal(true);
@@ -460,6 +453,7 @@ const ListarParticipante = () => {
                         <IconButton onClick={handleSort}>
                             <Sort />
                         </IconButton>
+
                         <IconButton onClick={handleAbrirModalContribuicoes}>
                             <Assessment />
                         </IconButton>
@@ -923,6 +917,7 @@ const ListarParticipante = () => {
                     )}
                 </Box>
             </Modal>
+            
             <Snackbar
                 open={snackbarOpen}
                 autoHideDuration={6000} // Fecha automaticamente após 6 segundos
@@ -933,7 +928,6 @@ const ListarParticipante = () => {
                     style: { backgroundColor: snackbarSeverity === "success" ? "green" : "red" }, // Cores de acordo com o tipo
                 }}
             />
-
 
             <DetalhesParticipanteModal
                 open={openDetalhesModal}
