@@ -229,7 +229,7 @@ const ListarParticipante = () => {
             handleSnackbarOpen("Erro ao marcar participante como inativo.", "error");
         }
     };
-
+/*
     const handleRegistrarContribuicaoManual = async () => {
         if (!selectedParticipante || !mesAnoContribuicao) {
             handleSnackbarOpen("Selecione o mês/ano para registrar a contribuição.", "error");
@@ -276,7 +276,67 @@ const ListarParticipante = () => {
             handleSnackbarOpen("Erro ao registrar contribuição manual.", "error");
         }
     };
+    */
+    const handleRegistrarContribuicaoManual = async () => {
+        if (!selectedParticipante || !mesAnoContribuicao) {
+            handleSnackbarOpen("Selecione o mês/ano para registrar a contribuição.", "error");
+            return;
+        }
+    
+        try {
+            // Extrai o ano e o mês do campo mesAnoContribuicao (formato YYYY-MM)
+            const [ano, mes] = mesAnoContribuicao.split("-");
+    
+            // Obtém a data atual do registro
+            const dataAtual = new Date();
+            const dia = dataAtual.getDate();
+            const mesRegistro = dataAtual.getMonth() + 1; // Meses começam do 0
+            const anoRegistro = dataAtual.getFullYear();
+    
+            // Cria o objeto da contribuição com valor fixo de R$ 10,00
+            const novaContribuicao = {
+                ano: parseInt(ano, 10),
+                mes: parseInt(mes, 10),
+                valor: 10, // Valor fixo
+                dataRegistro: {
+                    dia,
+                    mes: mesRegistro,
+                    ano: anoRegistro,
+                },
+            };
+    
+            // Referência para as contribuições do participante
+            const contribuicoesRef = ref(
+                database,
+                `participantes/${selectedParticipante.matricula}/contribuicoesMensais/${mesAnoContribuicao}`
+            );
+    
+            // Atualiza o Firebase com a nova contribuição
+            await update(contribuicoesRef, novaContribuicao);
+    
+            // Atualiza o estado local do participante
+            setSelectedParticipante((prev) => ({
+                ...prev,
+                contribuicoesMensais: {
+                    ...prev.contribuicoesMensais,
+                    [mesAnoContribuicao]: novaContribuicao,
+                },
+            }));
+    
+            // Limpa o campo do mês/ano após o registro
+            setMesAnoContribuicao("");
+    
+            // Feedback para o usuário
+            handleSnackbarOpen("Contribuição registrada com sucesso!", "success");
+            handleCloseModal();
+        } catch (error) {
+            console.error("Erro ao registrar contribuição manual:", error);
+            handleSnackbarOpen("Erro ao registrar contribuição manual.", "error");
+        }
+    };
+    
 
+/*
     const handleRegistrarPagamento = async (matricula) => {
         const participanteRef = ref(database, `participantes/${matricula}/contribuicoesMensais`);
         try {
@@ -310,7 +370,68 @@ const ListarParticipante = () => {
             setSnackbarSeverity("error");
             setOpenSnackbar(true);
         }
+    };*/
+
+    const handleRegistrarPagamento = async (matricula) => {
+        const participanteRef = ref(database, `participantes/${matricula}/contribuicoesMensais`);
+        try {
+            const dataAtual = new Date();
+            const currentMonth = dataAtual.getMonth() + 1;
+            const currentYear = dataAtual.getFullYear();
+            const currentDay = dataAtual.getDate();
+            const currentMonthYear = `${currentYear}-${String(currentMonth).padStart(2, "0")}`;
+    
+            const snapshot = await get(participanteRef);
+            let updatedData = snapshot.exists()
+                ? {
+                      ...snapshot.val(),
+                      [currentMonthYear]: {
+                          mes: currentMonth,
+                          ano: currentYear,
+                          valor: 10,
+                          dataRegistro: {
+                              dia: currentDay,
+                              mes: currentMonth,
+                              ano: currentYear,
+                          },
+                      },
+                  }
+                : {
+                      [currentMonthYear]: {
+                          mes: currentMonth,
+                          ano: currentYear,
+                          valor: 10,
+                          dataRegistro: {
+                              dia: currentDay,
+                              mes: currentMonth,
+                              ano: currentYear,
+                          },
+                      },
+                  };
+    
+            await update(participanteRef, updatedData);
+    
+            // Atualiza o estado `pagamentoFeito` para o participante específico
+            setParticipantes((prev) =>
+                prev.map((participante) =>
+                    participante.matricula === matricula
+                        ? { ...participante, pagamentoFeito: true }
+                        : participante
+                )
+            );
+    
+            // Feedback para o usuário
+            setSnackbarMessage("Contribuição registrada com sucesso.");
+            setSnackbarSeverity("success");
+            setOpenSnackbar(true);
+        } catch (error) {
+            console.error("Erro ao registrar Contribuição:", error);
+            setSnackbarMessage("Erro ao registrar Contribuição.");
+            setSnackbarSeverity("error");
+            setOpenSnackbar(true);
+        }
     };
+    
 
     const handleSearch = (e) => {
         setSearchTerm(e.target.value.toLowerCase());

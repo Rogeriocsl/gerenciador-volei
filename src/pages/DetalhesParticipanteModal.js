@@ -31,15 +31,15 @@ const DetalhesParticipanteModal = ({ open, onClose, participante }) => {
   // Transformar objeto de contribuições em um array
   const contribuicoesArray = contribuicoesMensais
     ? Object.entries(contribuicoesMensais).map(([key, value]) => ({
-        mesAno: key,
-        ...value,
-      }))
+      mesAno: key,
+      ...value,
+    }))
     : [];
 
   // Ordenar contribuições com base no sortOrder
   const contribuicoesOrdenadas = contribuicoesArray.sort((a, b) => {
-    const dateA = new Date(a.mesAno);
-    const dateB = new Date(b.mesAno);
+    const dateA = new Date(a.dataRegistro ? `${a.dataRegistro.ano}-${a.dataRegistro.mes}-${a.dataRegistro.dia}` : a.mesAno);
+    const dateB = new Date(b.dataRegistro ? `${b.dataRegistro.ano}-${b.dataRegistro.mes}-${b.dataRegistro.dia}` : b.mesAno);
     return sortOrder === "desc" ? dateB - dateA : dateA - dateB;
   });
 
@@ -47,8 +47,15 @@ const DetalhesParticipanteModal = ({ open, onClose, participante }) => {
   const exportToCSV = () => {
     const csvContent =
       "data:text/csv;charset=utf-8," +
-      "Mês/Ano,Valor\n" +
-      contribuicoesOrdenadas.map((c) => `${c.mesAno},${c.valor}`).join("\n");
+      "Data,Valor\n" +
+      contribuicoesOrdenadas
+        .map((c) => {
+          const data = c.dataRegistro
+            ? `${c.dataRegistro.dia}/${String(c.dataRegistro.mes).padStart(2, "0")}/${c.dataRegistro.ano}`
+            : c.mesAno;
+          return `${data},${c.valor}`;
+        })
+        .join("\n");
 
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
@@ -68,6 +75,8 @@ const DetalhesParticipanteModal = ({ open, onClose, participante }) => {
           left: "50%",
           transform: "translate(-50%, -50%)",
           width: "80%",
+          maxHeight: "90vh", // Definir altura máxima
+          overflowY: "auto", // Ativar scrollbar se necessário
           maxWidth: 800,
           bgcolor: "background.paper",
           boxShadow: 24,
@@ -105,38 +114,6 @@ const DetalhesParticipanteModal = ({ open, onClose, participante }) => {
           </Typography>
         </Box>
 
-        {/* Seção de Frequência */}
-        <Typography variant="h6" fontWeight="bold" gutterBottom>
-          Frequência de Treinos
-        </Typography>
-        {presencas && presencas.length > 0 ? (
-          <TableContainer component={Paper} sx={{ mb: 3 }}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell><strong>Data</strong></TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {presencas.map((presenca, index) => (
-                  <TableRow
-                    key={index}
-                    sx={{
-                      "&:nth-of-type(odd)": { backgroundColor: "#f9f9f9" },
-                    }}
-                  >
-                    <TableCell>{presenca}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        ) : (
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Nenhuma presença registrada.
-          </Typography>
-        )}
-
         {/* Seção de Histórico de Contribuições */}
         <Typography variant="h6" fontWeight="bold" gutterBottom>
           Histórico de Contribuições
@@ -163,6 +140,7 @@ const DetalhesParticipanteModal = ({ open, onClose, participante }) => {
               <TableHead>
                 <TableRow>
                   <TableCell><strong>Mês/Ano</strong></TableCell>
+                  <TableCell><strong>Data Registro</strong></TableCell>
                   <TableCell><strong>Valor</strong></TableCell>
                 </TableRow>
               </TableHead>
@@ -175,10 +153,16 @@ const DetalhesParticipanteModal = ({ open, onClose, participante }) => {
                     }}
                   >
                     <TableCell>{contribuicao.mesAno}</TableCell>
+                    <TableCell>
+                      {contribuicao.dataRegistro
+                        ? `${String(contribuicao.dataRegistro.dia).padStart(2, "0")}/${String(contribuicao.dataRegistro.mes).padStart(2, "0")}/${contribuicao.dataRegistro.ano}`
+                        : "N/A"}
+                    </TableCell>
                     <TableCell>{contribuicao.valor}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
+
             </Table>
           </TableContainer>
         ) : (
